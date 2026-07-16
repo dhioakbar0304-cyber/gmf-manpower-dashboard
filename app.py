@@ -10,15 +10,15 @@ from datetime import datetime
 # Bypass verifikasi SSL Certificate
 ssl._create_default_https_context = ssl._create_unverified_context
 
-# 1. KONFIGURASI HALAMAN UTAMA
+# 1. KONFIGURASI HALAMAN UTAMA (PAGE ICON SUDAH GANTI JADI LOGO GMF)
 st.set_page_config(
     page_title="GMF AeroAsia - Manpower Allocation",
-    page_icon="✈️", 
+    page_icon="gmf aeroasia logo new blue.png", 
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# 🏢 CONFIG LOGO UTAMA GMF AEROASIA (SUDAH DISESUAIKAN DENGAN NAMA FILE BOS)
+# 🏢 CONFIG LOGO UTAMA GMF AEROASIA
 LOGO_SOURCE = "gmf aeroasia logo new blue.png" 
 
 # INITIALIZE SESSION STATE
@@ -41,7 +41,7 @@ USER_DATABASE = {
     "supervisor_gmf": {"password": "gmfsecure02", "role": "Maintenance Supervisor"}
 }
 
-# 🎨 CSS KUSTOM PREMIUM (FIX VISIBILITY, LOGO ALIGNMENT, & ANTI-OVERLAP)
+# 🎨 CSS KUSTOM PREMIUM
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
@@ -58,7 +58,7 @@ st.markdown("""
             background-attachment: fixed;
         }
         
-        /* 🔎 STYLING SEARCH BAR AGAR JELAS & BERWARNA */
+        /* 🔎 STYLING SEARCH BAR */
         div[data-testid="stTextInput"] label {
             color: #041226 !important;
             font-weight: 700 !important;
@@ -90,29 +90,15 @@ st.markdown("""
         div.stButton > button:hover { background-color: #003F6B !important; box-shadow: 0px 4px 15px rgba(0, 201, 255, 0.4); }
         .sheets-btn { display: block; text-align: center; background-color: #107C41 !important; color: #FFFFFF !important; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; text-decoration: none; margin-top: 10px; margin-bottom: 20px; border: 1px solid #10B981; }
         
-        /* 🏢 WRAPPER BANNER DENGAN BACKGROUND DAN GLOW EFFECT */
-        .gmf-banner-bg { 
-            background: linear-gradient(135deg, #041226 0%, #002D54 100%); 
-            padding: 25px 35px; 
-            border-radius: 14px; 
-            margin-bottom: 30px; 
-            border-bottom: 5px solid #00C9FF; 
-            box-shadow: 0 10px 30px rgba(3, 18, 38, 0.25); 
-            display: flex;
-            align-items: center;
-        }
-        .gmf-banner-text h1 { font-size: 38px !important; font-weight: 900 !important; letter-spacing: 2px; margin: 0 !important; color: #FFFFFF !important; padding-top: 5px; }
-        .gmf-banner-text p { color: #00C9FF !important; font-size: 13px !important; font-weight: 700; letter-spacing: 4px; margin-top: 5px !important; text-transform: uppercase; }
-        
         /* LOGIN CARD */
         .login-card { background-color: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); padding: 40px; border-radius: 16px; box-shadow: 0 15px 35px rgba(4, 18, 38, 0.15); border: 1px solid rgba(255, 255, 255, 0.6); border-top: 5px solid #005C97; }
         
         /* KPI BLOCKS */
-        .kpi-card { background-color: rgba(255, 255, 255, 0.92); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); padding: 20px; border-radius: 12px; box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05); border-top: 5px solid #005C97; }
+        .kpi-card { background-color: rgba(255, 255, 255, 0.92); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); padding: 20px; border-radius: 12px; box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05); border-top: 5px solid #005C97; margin-bottom: 25px; }
         .kpi-title { color: #556980; font-size: 11px; font-weight: 800; margin-bottom: 6px; letter-spacing: 1.2px; text-transform: uppercase; }
         .kpi-number { font-size: 26px; font-weight: 900; color: #041226; margin: 0; }
         
-        .section-header { font-size: 18px; font-weight: 800; color: #041226; margin-top: 25px; margin-bottom: 15px; border-left: 5px solid #005C97; padding-left: 12px; text-transform: uppercase; }
+        .section-header { font-size: 18px; font-weight: 800; color: #041226; margin-top: 10px; margin-bottom: 15px; border-left: 5px solid #005C97; padding-left: 12px; text-transform: uppercase; }
         .floating-panel { background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 12px; padding: 20px; box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05); margin-bottom: 20px; }
 
         /* STATUS BADGES */
@@ -138,8 +124,13 @@ st.markdown("""
 if not st.session_state.logged_in:
     col_space_l, col_login_core, col_space_r = st.columns([1, 1.2, 1])
     with col_login_core:
-        st.markdown("<br><br><br>", unsafe_allow_html=True)
-        st.markdown('<div class="login-card"><div style="text-align: center; margin-bottom: 25px;"><h2 style="color: #041226; font-weight: 900; letter-spacing: 1px; font-size: 26px; margin:0;">TACTICAL COMMAND</h2><p style="color: #005C97; font-weight: bold; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-top:5px;">GMF AeroAsia - Outstation Division</p></div>', unsafe_allow_html=True)
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        
+        # LOGO GMF DI HALAMAN LOGIN
+        if os.path.exists(LOGO_SOURCE):
+            st.image(LOGO_SOURCE, use_container_width=True)
+            
+        st.markdown('<div class="login-card"><div style="text-align: center; margin-bottom: 25px;"><h3 style="color: #041226; font-weight: 900; letter-spacing: 1px; margin:0; text-transform: uppercase;">System Authentication</h3><p style="color: #005C97; font-weight: bold; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-top:5px;">Tactical Outstation Command</p></div>', unsafe_allow_html=True)
         input_user = st.text_input("Username", placeholder="Masukkan ID personel Anda...", key="login_user")
         input_pass = st.text_input("Password", type="password", placeholder="••••••••", key="login_pass")
         st.markdown("<br>", unsafe_allow_html=True)
@@ -204,7 +195,10 @@ if st.session_state.last_df is not None:
 st.session_state.last_df = df_mentah.copy()
 st.session_state.activity_logs = st.session_state.activity_logs[:5]
 
-# SIDEBAR CONTROL
+# SIDEBAR CONTROL & LOGO
+if os.path.exists(LOGO_SOURCE):
+    st.sidebar.image(LOGO_SOURCE, use_container_width=True)
+st.sidebar.markdown("---")
 st.sidebar.markdown("### 📊 INPUT & UPDATE DATA")
 st.sidebar.markdown(f'<a href="{LINK_EDIT_GOOGLE_SHEETS}" target="_blank" class="sheets-btn">🟢 EDIT LIVE EXCEL SHEET</a>', unsafe_allow_html=True)
 st.sidebar.markdown("### 🎛️ CONTROL PANEL")
@@ -216,25 +210,21 @@ if st.sidebar.button("🔴 SECURE LOGOUT", use_container_width=True):
     st.session_state.logged_in = False
     st.rerun()
 
-# 🏢 MAIN BANNER DENGAN BLEND LOGO GMF AEROASIA
-st.markdown('<div class="gmf-banner-bg">', unsafe_allow_html=True)
-ban_col1, ban_col2 = st.columns([1, 6])
+# 🏢 MAIN BANNER (SUDAH DIPERBAIKI: HAPUS DOBEL TEKS & HAPUS KOTAK HITAM)
+ban_col1, ban_col2 = st.columns([1.5, 5])
 with ban_col1:
-    if os.path.exists(LOGO_SOURCE) or LOGO_SOURCE.startswith("http"):
-        try:
-            st.image(LOGO_SOURCE, use_container_width=True)
-        except Exception:
-            st.markdown('<div style="font-size: 50px; text-align: center; margin-top: 5px;">✈️</div>', unsafe_allow_html=True)
+    if os.path.exists(LOGO_SOURCE):
+        st.image(LOGO_SOURCE, use_container_width=True)
     else:
-        st.markdown('<div style="font-size: 50px; text-align: center; margin-top: 5px;">✈️</div>', unsafe_allow_html=True)
+        st.markdown('<div style="font-size: 40px; text-align: center;">✈️</div>', unsafe_allow_html=True)
 with ban_col2:
     st.markdown("""
-        <div class="gmf-banner-text">
-            <h1>GMF AEROASIA</h1>
-            <p>Tactical Outstation Manpower Command Center</p>
+        <div style="padding-top: 15px;">
+            <h2 style="color: #041226; font-weight: 900; margin: 0; letter-spacing: 1px;">TACTICAL OUTSTATION COMMAND CENTER</h2>
+            <p style="color: #005C97; font-size: 14px; font-weight: 700; letter-spacing: 3px; margin-top: 5px; text-transform: uppercase;">Real-Time Manpower Telemetry</p>
         </div>
     """, unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('<hr style="border: 2px solid #005C97; margin-top: 0px; margin-bottom: 25px; border-radius: 5px;">', unsafe_allow_html=True)
 
 # SEARCH CONTAINER
 search_query = st.text_input("🔎 Pencarian Berdasarkan Nama / Kualifikasi / Stasiun Hub:", placeholder="Ketik nama personel atau kode stasiun di sini...")
