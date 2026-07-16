@@ -37,7 +37,7 @@ USER_DATABASE = {
     "supervisor_gmf": {"password": "gmfsecure02", "role": "Maintenance Supervisor"}
 }
 
-# 🎨 CSS KUSTOM PREMIUM: FIX OVERFLOW & SEARCH BAR COLORING
+# 🎨 CSS KUSTOM PREMIUM (FIX VISIBILITY & ANTI-OVERLAP)
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
@@ -54,7 +54,12 @@ st.markdown("""
             background-attachment: fixed;
         }
         
-        /* 🎨 FIX UTAMA: STYLING INPUT PENCARIAN AGAR BERWARNA & TEGAS */
+        /* 🔎 STYLING SEARCH BAR AGAR JELAS & BERWARNA */
+        div[data-testid="stTextInput"] label {
+            color: #041226 !important;
+            font-weight: 700 !important;
+            font-size: 14px !important;
+        }
         div[data-testid="stTextInput"] input {
             font-family: 'Montserrat', sans-serif !important;
             border: 2px solid #005C97 !important;
@@ -64,14 +69,14 @@ st.markdown("""
             padding: 12px 16px !important;
             font-size: 14px !important;
             font-weight: 600 !important;
-            box-shadow: 0 4px 12px rgba(0, 92, 151, 0.08) !important;
+            box-shadow: 0 4px 12px rgba(0, 92, 151, 0.1) !important;
         }
         div[data-testid="stTextInput"] input:focus {
             border-color: #00C9FF !important;
             box-shadow: 0 4px 15px rgba(0, 201, 255, 0.2) !important;
         }
         
-        /* SIDEBAR & BANNER STYLING */
+        /* SIDEBAR & BANNER */
         section[data-testid="stSidebar"] { background-color: #041226 !important; border-right: 2px solid #005C97; }
         div[data-testid="stSidebarUserContent"] p, div[data-testid="stSidebarUserContent"] span, 
         div[data-testid="stSidebarUserContent"] h3, div[data-testid="stSidebarUserContent"] label {
@@ -88,34 +93,24 @@ st.markdown("""
         .login-card { background-color: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); padding: 40px; border-radius: 16px; box-shadow: 0 15px 35px rgba(4, 18, 38, 0.15); border: 1px solid rgba(255, 255, 255, 0.6); border-top: 5px solid #005C97; }
         .kpi-card { background-color: rgba(255, 255, 255, 0.92); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); padding: 20px; border-radius: 12px; box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05); border-top: 5px solid #005C97; }
         .kpi-title { color: #556980; font-size: 11px; font-weight: 800; margin-bottom: 6px; letter-spacing: 1.2px; text-transform: uppercase; }
-        .kpi-number { font-size: 34px; font-weight: 900; color: #041226; margin: 0; }
-        .section-header { font-size: 18px; font-weight: 800; color: #041226; margin-top: 30px; margin-bottom: 15px; border-left: 5px solid #005C97; padding-left: 12px; text-transform: uppercase; }
+        .kpi-number { font-size: 28px; font-weight: 900; color: #041226; margin: 0; }
+        .section-header { font-size: 18px; font-weight: 800; color: #041226; margin-top: 25px; margin-bottom: 15px; border-left: 5px solid #005C97; padding-left: 12px; text-transform: uppercase; }
         .floating-panel { background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 12px; padding: 20px; box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05); margin-bottom: 20px; }
 
         /* STATUS WARNA & BLINKING EFFECT */
-        @keyframes blinker { 50% { opacity: 0.3; } }
+        @keyframes blinker { 50% { opacity: 0.2; } }
         .status-active { color: #10B981; font-weight: 800; }
         .status-standby { color: #F59E0B; font-weight: 800; }
         .status-offline { color: #EF4444; font-weight: 900; animation: blinker 1s linear infinite; }
         
-        /* 🚨 FIX UTAMA: KONTROL ISOLASI TABEL HTML AGAR TIDAK MELUBER KELUAR KOLOM */
-        .table-wrapper {
-            width: 100% !important;
-            overflow-x: auto !important;
-            display: block !important;
-        }
-        .styled-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            font-size: 13px; 
-            text-align: left; 
-            background-color: transparent;
-        }
+        /* TABLE CONTAINER & STYLE */
+        .table-wrapper { width: 100% !important; overflow-x: auto !important; }
+        .styled-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; background-color: transparent; }
         .styled-table thead tr { background-color: #041226; color: #ffffff; }
         .styled-table th, .styled-table td { padding: 12px 15px; border-bottom: 1px solid #E2E8F0; white-space: nowrap; }
         .styled-table tbody tr:nth-of-type(even) { background-color: #F8FAFC; }
 
-        /* Activity Feed Item */
+        /* Activity Feed */
         .activity-item { padding: 10px 0; border-bottom: 1px solid #E2E8F0; font-size: 12px; color: #334155; }
         .activity-time { font-weight: 800; color: #005C97; margin-right: 10px; }
     </style>
@@ -155,7 +150,7 @@ DOKUMEN_KOORDINAT = {
 LINK_EDIT_GOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1IPuSFsMxZCKQBcL7NBoE-JIsQkG7-DePII0I2b8x9Vk/edit"
 LINK_EXPORT_GOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1IPuSFsMxZCKQBcL7NBoE-JIsQkG7-DePII0I2b8x9Vk/export?format=csv&gid=827445294"
 
-@st.cache_data(ttl=10)
+@st.cache_data(ttl=5)
 def load_live_google_sheets():
     try:
         return pd.read_csv(LINK_EXPORT_GOOGLE_SHEETS)
@@ -206,9 +201,8 @@ if st.sidebar.button("🔴 SECURE LOGOUT", use_container_width=True):
 # MAIN BANNER
 st.markdown('<div class="gmf-banner"><h1>GMF AEROASIA</h1><p>Tactical Outstation Manpower Command Center</p></div>', unsafe_allow_html=True)
 
-# SEARCH CONTAINER
-st.markdown("<div class='section-header'>🔎 Tactical Resource Filter</div>", unsafe_allow_html=True)
-search_query = st.text_input("Ketik nama, kualifikasi, atau stasiun hub di bawah ini:", placeholder="Cari Personel / Kualifikasi...")
+# SEARCH CONTAINER (WARNA BORDER TEGAS)
+search_query = st.text_input("🔎 Pencarian Berdasarkan Nama / Kualifikasi / Stasiun Hub:", placeholder="Ketik di sini untuk memfilter data manpower...")
 
 if search_query:
     df_pekerja = df_mentah[
@@ -219,19 +213,19 @@ if search_query:
 else:
     df_pekerja = df_mentah
 
-# KPI BLOCKS
+# KPI BLOCKS (SATUAN PX GANTI KE PERSONEL)
 total_personel = len(df_pekerja)
 personel_aktif = len(df_pekerja[df_pekerja['Status'].astype(str).str.strip().str.lower() == 'active'])
 personel_standby = len(df_pekerja[df_pekerja['Status'].astype(str).str.strip().str.lower() == 'standby'])
 jumlah_di_cgk = len(df_pekerja[df_pekerja['Lokasi'].astype(str).str.strip() == 'CGK'])
 
 c1, c2, c3, c4 = st.columns(4)
-c1.markdown(f'<div class="kpi-card"><div class="kpi-title">📁 Total Fleet Manpower</div><div class="kpi-number">{total_personel} Px</div></div>', unsafe_allow_html=True)
-c2.markdown(f'<div class="kpi-card" style="border-top-color: #10B981;"><div class="kpi-title" style="color:#10B981;">🟢 Active On Duty</div><div class="kpi-number">{personel_aktif} Px</div></div>', unsafe_allow_html=True)
-c3.markdown(f'<div class="kpi-card" style="border-top-color: #F59E0B;"><div class="kpi-title" style="color:#F59E0B;">🟡 Standby Alert</div><div class="kpi-number">{personel_standby} Px</div></div>', unsafe_allow_html=True)
-c4.markdown(f'<div class="kpi-card" style="border-top-color: #3B82F6;"><div class="kpi-title" style="color:#3B82F6;">🔵 CGK Ready Resource</div><div class="kpi-number">{jumlah_di_cgk} Px</div></div>', unsafe_allow_html=True)
+c1.markdown(f'<div class="kpi-card"><div class="kpi-title">📁 Total Fleet Manpower</div><div class="kpi-number">{total_personel} Personel</div></div>', unsafe_allow_html=True)
+c2.markdown(f'<div class="kpi-card" style="border-top-color: #10B981;"><div class="kpi-title" style="color:#10B981;">🟢 Active On Duty</div><div class="kpi-number">{personel_aktif} Personel</div></div>', unsafe_allow_html=True)
+c3.markdown(f'<div class="kpi-card" style="border-top-color: #F59E0B;"><div class="kpi-title" style="color:#F59E0B;">🟡 Standby Alert</div><div class="kpi-number">{personel_standby} Personel</div></div>', unsafe_allow_html=True)
+c4.markdown(f'<div class="kpi-card" style="border-top-color: #3B82F6;"><div class="kpi-title" style="color:#3B82F6;">🔵 CGK Ready Resource</div><div class="kpi-number">{jumlah_di_cgk} Personel</div></div>', unsafe_allow_html=True)
 
-# 6. TWO-COLUMN BALANCED LAYOUT
+# 6. ROW ATAS: MAP UTAMA VS OPERATIONAL ANALYTICS
 col_left, col_right = st.columns([55, 45])
 
 with col_left:
@@ -246,7 +240,7 @@ with col_left:
             warna_pin = "green" if 'active' in statuses else ("orange" if 'standby' in statuses else "red")
             
             popup_html = f"""
-            <div style='font-family: "Montserrat", sans-serif; color: #1e293b; min-width:250px;'>
+            <div style='font-family: "Montserrat", sans-serif; color: #1e293b; min-width:240px;'>
                 <h4 style='margin:0 0 5px 0; color:#1e3a8a; font-weight:800;'>Station Hub: {lok}</h4>
                 <table style='width:100%; font-size:11px; border-collapse: collapse;'>
                     <tr style='background-color:#f1f5f9; text-align:left;'>
@@ -262,58 +256,52 @@ with col_left:
             
             folium.Marker(location=koordinat, popup=folium.Popup(popup_html, max_width=350), icon=folium.Icon(color=warna_pin)).add_to(m)
             
-    st_folium(m, width="100%", height=420)
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown("<div class='section-header'>📋 Personnel Directory Ledger</div>", unsafe_allow_html=True)
-    st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
-    
-    # WRAPPER ANTI-MENGSONG UNTUK TABEL HTML
-    st.markdown('<div class="table-wrapper">', unsafe_allow_html=True)
-    def render_status(status):
-        v = str(status).strip()
-        if v.lower() == 'active': return '<span class="status-active">🟢 Active</span>'
-        elif v.lower() == 'standby': return '<span class="status-standby">🟡 Standby</span>'
-        else: return f'<span class="status-offline">🔴 {v}</span>'
-
-    df_html = df_pekerja.copy()
-    df_html['Status'] = df_html['Status'].apply(render_status)
-    st.markdown(df_html.to_html(escape=False, index=False, classes="styled-table"), unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True) # Close wrapper
+    st_folium(m, width="100%", height=380)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_right:
-    st.markdown("<div class='section-header'>📊 Advanced Analytics & Operations</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-header'>📊 Operational Telemetry & Logs</div>", unsafe_allow_html=True)
     
+    # CHARTS INTERAKTIF PADA POPOVER
     pop_col1, pop_col2 = st.columns(2)
     with pop_col1:
-        with st.popover("⚙️ Status Telemetry Map", use_container_width=True):
-            if not df_pekerja.empty: st.bar_chart(df_pekerja['Status'].value_counts(), color="#107C41", height=180)
+        with st.popover("⚙️ Status Telemetry Chart", use_container_width=True):
+            if not df_pekerja.empty: st.bar_chart(df_pekerja['Status'].value_counts(), color="#107C41", height=150)
     with pop_col2:
-        with st.popover("✈️ Inspect Capabilities", use_container_width=True):
-            if not df_pekerja.empty: st.bar_chart(df_pekerja['Kualifikasi'].value_counts().head(5), color="#F59E0B", height=180)
+        with st.popover("✈️ Core Fleet Capabilities", use_container_width=True):
+            if not df_pekerja.empty: st.bar_chart(df_pekerja['Kualifikasi'].value_counts().head(5), color="#F59E0B", height=150)
 
-    st.markdown('<div class="floating-panel" style="margin-top: 15px;">', unsafe_allow_html=True)
-    st.markdown("<h4 style='color:#041226; font-size:14px; font-weight:800; margin:0 0 15px 0;'>📈 Hub Resource Strength Breakdown</h4>", unsafe_allow_html=True)
-    if not df_pekerja.empty: st.bar_chart(df_pekerja['Lokasi'].value_counts(), color="#005C97", height=240)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # SECURE & ALIGNED LIVE ACTIVITY FEED
-    st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
-    st.markdown("<h4 style='color:#041226; font-size:14px; font-weight:800; margin:0 0 15px 0;'>⚡ Network Resource Utilization</h4>", unsafe_allow_html=True)
-    
+    # SECURE LIVE ACTIVITY FEED & UTILIZATION LOAD
+    st.markdown('<div class="floating-panel" style="margin-top: 10px;">', unsafe_allow_html=True)
     utilization_rate = int((personel_aktif / total_personel) * 100) if total_personel > 0 else 0
     st.markdown(f"""
         <div style="margin-bottom: 5px; font-size: 13px; font-weight: 600; color: #334155;">Active Deployment Load ({utilization_rate}%)</div>
-        <div style="width: 100%; background-color: #E2E8F0; border-radius: 8px; height: 12px; margin-bottom: 20px;">
-            <div style="width: {utilization_rate}%; background-color: #10B981; border-radius: 8px; height: 12px;"></div>
+        <div style="width: 100%; background-color: #E2E8F0; border-radius: 8px; height: 10px; margin-bottom: 15px;">
+            <div style="width: {utilization_rate}%; background-color: #10B981; border-radius: 8px; height: 10px;"></div>
         </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("<h4 style='color:#041226; font-size:14px; font-weight:800; margin:20px 0 10px 0;'>📡 Live Activity Feed (Real-Time Diff)</h4>", unsafe_allow_html=True)
-    
+    st.markdown("<h4 style='color:#041226; font-size:13px; font-weight:800; margin:10px 0 5px 0;'>📡 Live Activity Feed (Real-Time Diff)</h4>", unsafe_allow_html=True)
     logs_html = ""
     for log in st.session_state.activity_logs:
         logs_html += f'<div class="activity-item"><span class="activity-time">[{log["time"]}]</span> {log["msg"]}</div>'
     st.markdown(logs_html, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
+
+# 🚨 ROW BAWAH (ISOLASI TOTAL): SECTION MASTER LEDGER FULL WIDTH - ANTI TABRAKAN!
+st.markdown("<div class='section-header'>📋 Personnel Directory Master Ledger</div>", unsafe_allow_html=True)
+st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
+st.markdown('<div class="table-wrapper">', unsafe_allow_html=True)
+
+def render_status(status):
+    v = str(status).strip()
+    if v.lower() == 'active': return '<span class="status-active">🟢 Active</span>'
+    elif v.lower() == 'standby': return '<span class="status-standby">🟡 Standby</span>'
+    else: return f'<span class="status-offline">🔴 {v}</span>'
+
+df_html = df_pekerja.copy()
+df_html['Status'] = df_html['Status'].apply(render_status)
+st.markdown(df_html.to_html(escape=False, index=False, classes="styled-table"), unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True) 
+st.markdown('</div>', unsafe_allow_html=True)
