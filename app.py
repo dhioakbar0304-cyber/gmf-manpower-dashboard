@@ -7,7 +7,7 @@ import ssl
 # Bypass verifikasi SSL Certificate pada macOS
 ssl._create_default_https_context = ssl._create_unverified_context
 
-# 1. KONFIGURASI HALAMAN UTAMA
+# 1. KONFIGURASI HALAMAN UTAMA (Aviation & Corporate Standard)
 st.set_page_config(
     page_title="GMF AeroAsia - Manpower Allocation Dashboard",
     page_icon="https://www.garuda-indonesia.com/favicon.ico", 
@@ -18,29 +18,29 @@ st.set_page_config(
 # 🎨 CSS KUSTOM: EXCLUSIVE CORPORATE TONE, AVIATION BACKDROP, & GLASSMORPHISM
 st.markdown("""
     <style>
-        /* Import Font Montserrat (Sangat Rekomendasi untuk Brand Korporat & Penerbangan) */
+        /* Import Font Montserrat (Standar Korporat Global & Aviasi) */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
         
         html, body, [class*="css"] {
-            font-family: 'Montserrat', 'Helvetica Neue', Arial, sans-serif !important;
+            font-family: 'Montserrat', sans-serif !important;
         }
 
-        /* BACKGROUND GAMBAR PENUH (TEMA AVIASI/HANGAR DENGAN OVERLAY PREMIUM) */
+        /* BACKGROUND UTAMA: Nuansa Biru/Abu Dingin Maskapai Modern */
         .stApp {
-            background-image: linear-gradient(rgba(244, 246, 249, 0.90), rgba(244, 246, 249, 0.90)), 
+            background-image: linear-gradient(rgba(240, 244, 248, 0.93), rgba(240, 244, 248, 0.93)), 
                               url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
         }
         
-        /* Sidebar Gelap Pekat Premium (Garuda Deep Navy) */
+        /* SIDEBAR: Biru Gelap Pekat (Midnight Executive Blue) */
         section[data-testid="stSidebar"] {
-            background-color: #03132B !important; 
-            border-right: 3px solid #005C97;
+            background-color: #041226 !important; 
+            border-right: 2px solid #005C97;
         }
         
-        /* Memaksa semua elemen di sidebar terlihat putih terang & menggunakan font Montserrat */
+        /* Sidebar Link/Teks Putih Bersih & Montserrat */
         section[data-testid="stSidebar"] *, 
         section[data-testid="stSidebar"] span, 
         section[data-testid="stSidebar"] p, 
@@ -50,16 +50,16 @@ st.markdown("""
             font-weight: 500;
         }
         
-        /* Membuang block abu-abu pada teks di sidebar */
+        /* Membuang block abu-abu pada teks kode di sidebar */
         section[data-testid="stSidebar"] code {
             background-color: transparent !important;
-            color: #00C9FF !important;
+            color: #38BDF8 !important;
             font-size: 13px !important;
             font-weight: 700 !important;
             padding: 0px !important;
         }
         
-        /* Tombol Sync Biru Terang di Sidebar */
+        /* Tombol Re-Sync Biru Terang di Sidebar */
         div.stButton > button {
             background-color: #005C97 !important;
             color: #FFFFFF !important;
@@ -75,7 +75,7 @@ st.markdown("""
             box-shadow: 0px 4px 15px rgba(0, 201, 255, 0.4);
         }
         
-        /* Tombol Link Google Sheets Hijau Premium */
+        /* Tombol Link Google Sheets Hijau Excel */
         .sheets-btn {
             display: block;
             text-align: center;
@@ -100,22 +100,22 @@ st.markdown("""
             text-decoration: none;
         }
         
-        /* Banner GMF Premium Terang Kontras */
+        /* Header Banner GMF Premium Terang Kontras */
         .gmf-banner {
-            background: linear-gradient(135deg, #03132B 0%, #002D54 100%);
-            padding: 45px 20px;
-            border-radius: 16px;
+            background: linear-gradient(135deg, #041226 0%, #002D54 100%);
+            padding: 35px 20px;
+            border-radius: 14px;
             color: #FFFFFF !important;
             text-align: center;
             margin-bottom: 30px;
-            border-bottom: 6px solid #00C9FF;
-            box-shadow: 0 10px 30px rgba(3, 19, 43, 0.25);
+            border-bottom: 5px solid #00C9FF;
+            box-shadow: 0 10px 30px rgba(3, 18, 38, 0.25);
         }
         
         .gmf-banner h1 {
             font-family: 'Montserrat', sans-serif !important;
             color: #FFFFFF !important;
-            font-size: 48px !important;
+            font-size: 42px !important;
             font-weight: 900 !important;
             letter-spacing: 2px;
             margin: 0 !important;
@@ -126,8 +126,8 @@ st.markdown("""
             color: #00C9FF !important;
             font-size: 13px !important;
             font-weight: 700;
-            letter-spacing: 4px;
-            margin-top: 12px !important;
+            letter-spacing: 5px;
+            margin-top: 10px !important;
             margin-bottom: 0px !important;
             text-transform: uppercase;
         }
@@ -136,68 +136,70 @@ st.markdown("""
         div[data-testid="stTextInput"] input {
             font-family: 'Montserrat', sans-serif !important;
             border-radius: 8px !important;
-            border: 2px solid #03132B !important;
+            border: 2px solid #041226 !important;
             padding: 12px !important;
             font-size: 15px !important;
-            color: #03132B !important;
-            background-color: rgba(255, 255, 255, 0.9) !important;
+            color: #041226 !important;
+            background-color: rgba(255, 255, 255, 0.95) !important;
             font-weight: 600 !important;
         }
 
         /* Kartu KPI dengan Efek Glassmorphism Modern */
         .kpi-card {
-            background-color: rgba(255, 255, 255, 0.88);
+            background-color: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.5);
-            padding: 22px;
-            border-radius: 14px;
-            box-shadow: 0 8px 32px 0 rgba(3, 19, 43, 0.08);
-            border-top: 6px solid #005C97;
-            transition: transform 0.2s;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05);
+            border-top: 5px solid #005C97;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         .kpi-card:hover {
             transform: translateY(-3px);
+            box-shadow: 0 12px 30px 0 rgba(3, 18, 38, 0.1);
         }
         
         .kpi-title {
             font-family: 'Montserrat', sans-serif !important;
-            color: #475569;
-            font-size: 12px;
+            color: #556980;
+            font-size: 11px;
             font-weight: 800;
-            margin-bottom: 8px;
-            letter-spacing: 1px;
+            margin-bottom: 6px;
+            letter-spacing: 1.2px;
             text-transform: uppercase;
         }
         
         .kpi-number {
             font-family: 'Montserrat', sans-serif !important;
-            font-size: 36px;
+            font-size: 34px;
             font-weight: 900;
-            color: #03132B;
+            color: #041226;
             margin: 0;
         }
 
-        /* Judul Section Sangat Jelas */
+        /* Judul Section (Garis Batas Biru Eksklusif) */
         .section-header {
             font-family: 'Montserrat', sans-serif !important;
-            font-size: 20px;
-            font-weight: 900;
-            color: #03132B;
-            margin-top: 35px;
-            margin-bottom: 18px;
-            border-left: 6px solid #005C97;
+            font-size: 18px;
+            font-weight: 800;
+            color: #041226;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 5px solid #005C97;
             padding-left: 12px;
             letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
         
-        /* Container Float Glassmorphism untuk Peta & Tabel */
+        /* Container Panel */
         .floating-panel {
-            background-color: rgba(255, 255, 255, 0.93);
+            background-color: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 14px;
-            padding: 18px;
-            box-shadow: 0 8px 32px 0 rgba(3, 19, 43, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05);
         }
     </style>
 """, unsafe_allow_html=True)
@@ -226,13 +228,11 @@ df_mentah = load_live_google_sheets()
 # 2. PANEL SIDEBAR KIRI
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 
-# 🏆 PNG LOGO GMF RESMI (DITANAM DENGAN BASE64 - 100% RESPONSIVE & ANTI-POTONG)
-logo_gmf_png_url = "https://raw.githubusercontent.com/dhioakbar0304-cyber/gmf-manpower-dashboard/main/logo_gmf_fixed.png"
-# Kita panggil menggunakan HTML img agar width disesuaikan 100% dari ruang sidebar secara otomatis
-st.sidebar.image(
-    "https://upload.wikimedia.org/wikipedia/commons/e/ee/Logo_GMF_AeroAsia.png", 
-    use_container_width=True,
-)
+# 🏆 LOGO GMF LOKAL (Dipanggil langsung dari repositori secara aman)
+try:
+    st.sidebar.image("gmf aeroasia logo new blue.png", use_container_width=True)
+except Exception as e:
+    st.sidebar.warning("⚠️ Letakkan file 'gmf aeroasia logo new blue.png' di repositori GitHub Anda.")
 
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
@@ -320,7 +320,7 @@ with c4:
         st.markdown(f"""
             <div class="kpi-card" style="border-top-color: #EF4444; background-color: #FEF2F2;">
                 <div class="kpi-title" style="color:#EF4444;">🚨 CGK Base Alert</div>
-                <div class="kpi-number" style="color:#EF4444; font-size: 22px; padding-top:10px;">EMPTY RESOURCE</div>
+                <div class="kpi-number" style="color:#EF4444; font-size: 20px; padding-top:10px; font-weight:800;">EMPTY RESOURCE</div>
             </div>
         """, unsafe_allow_html=True)
     else:
