@@ -216,6 +216,16 @@ st.markdown("""
             box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05);
             margin-bottom: 20px;
         }
+
+        /* Menyesuaikan desain tombol popover melayang agar senada dengan korporat GMF */
+        div[data-testid="stPopover"] button {
+            background-color: #ffffff !important;
+            color: #041226 !important;
+            border: 2px solid #005C97 !important;
+            font-weight: 700 !important;
+            border-radius: 8px !important;
+            box-shadow: 0px 4px 10px rgba(0, 92, 151, 0.1) !important;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -461,39 +471,39 @@ with col_left:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_right:
-    # --- CHART 1: STATION DISTRIBUTION ---
-    st.markdown("<div class='section-header'>📊 Hub Resource Strength</div>", unsafe_allow_html=True)
+    # --- 🛠️ DUA KOTAK KOSONG DIUBAH MENJADI ANALYTICS POPOVER WIDGETS ---
+    st.markdown("<div class='section-header'>📊 Advanced Manpower Analytics</div>", unsafe_allow_html=True)
+    
+    pop_col1, pop_col2 = st.columns(2)
+    
+    with pop_col1:
+        # Mengubah kotak kosong pertama menjadi Widget Popover Taktis
+        with st.popover("⚙️ Open Status Telemetry Map", use_container_width=True):
+            st.markdown("<h4 style='color:#041226; font-size:14px; font-weight:800; margin:0;'>📊 Duty Distribution Status</h4>", unsafe_allow_html=True)
+            st.write("Analitik pembagian waktu siaga personil stasiun luar.")
+            if not df_pekerja.empty:
+                distribusi_status = df_pekerja['Status'].value_counts()
+                st.bar_chart(distribusi_status, color="#107C41", height=200)
+            else:
+                st.caption("No status metrics recorded.")
+                
+    with pop_col2:
+        # Mengubah kotak kosong kedua menjadi Widget Popover Taktis
+        with st.popover("✈️ Inspect Fleet Capabilities", use_container_width=True):
+            st.markdown("<h4 style='color:#041226; font-size:14px; font-weight:800; margin:0;'>🚀 Fleet Engine & Airframe Skillset</h4>", unsafe_allow_html=True)
+            st.write("Kuantitas keahlian tipe pesawat yang bersertifikasi.")
+            if not df_pekerja.empty:
+                distribusi_kualifikasi = df_pekerja['Kualifikasi'].value_counts().head(5)
+                st.bar_chart(distribusi_kualifikasi, color="#F59E0B", height=200)
+            else:
+                st.caption("No capability metrics recorded.")
+                
+    # --- CHART 1: STATION DISTRIBUTION (Tetap di bawah widget pop-up agar layout kokoh) ---
+    st.markdown("<div class='section-header'>📈 Hub Resource Strength Breakdown</div>", unsafe_allow_html=True)
     st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
     if not df_pekerja.empty:
         distribusi_lokasi = df_pekerja['Lokasi'].value_counts()
-        st.bar_chart(distribusi_lokasi, color="#005C97", height=240)
+        st.bar_chart(distribusi_lokasi, color="#005C97", height=280)
     else:
         st.caption("Tidak ada data untuk dibuat grafik.")
     st.markdown('</div>', unsafe_allow_html=True)
-    
-    # --- SECTION ADVANCED MANPOWER ANALYTICS ---
-    st.markdown("<div class='section-header'>📋 Advanced Manpower Analytics</div>", unsafe_allow_html=True)
-    
-    sub_col1, sub_col2 = st.columns(2)
-    
-    with sub_col1:
-        # --- CHART 2: STATUS OPERATION ---
-        st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
-        st.markdown("<p style='font-size:11px; font-weight:800; color:#556980; margin:0 0 10px 0; letter-spacing:1px;'>⏱️ DUTY STATUS SHARE</p>", unsafe_allow_html=True)
-        if not df_pekerja.empty:
-            distribusi_status = df_pekerja['Status'].value_counts()
-            st.bar_chart(distribusi_status, color="#107C41", height=220)
-        else:
-            st.caption("No status data available.")
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-    with sub_col2:
-        # --- CHART 3: TOP AIRCRAFT QUALIFICATIONS ---
-        st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
-        st.markdown("<p style='font-size:11px; font-weight:800; color:#556980; margin:0 0 10px 0; letter-spacing:1px;'>✈️ AIRCRAFT TYPE CAPABILITY</p>", unsafe_allow_html=True)
-        if not df_pekerja.empty:
-            distribusi_kualifikasi = df_pekerja['Kualifikasi'].value_counts().head(5)
-            st.bar_chart(distribusi_kualifikasi, color="#F59E0B", height=220)
-        else:
-            st.caption("No capability data available.")
-        st.markdown('</div>', unsafe_allow_html=True)
