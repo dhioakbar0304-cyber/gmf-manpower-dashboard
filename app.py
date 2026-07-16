@@ -252,10 +252,17 @@ if not st.session_state.logged_in:
             </div>
         """, unsafe_allow_html=True)
         
-        # Container Login terpadu (Tanpa st.container() ganda)
+        # Container Login terpadu
         st.markdown('<div class="login-box">', unsafe_allow_html=True)
-        st.markdown("<h3 style='color:#041226; font-weight:800; margin-top:0;'>🔒 Secure Gateway Login</h3>", unsafe_allow_html=True)
         
+        # 🏆 Menambahkan Logo GMF (PNG) di atas formulir login secara lokal
+        try:
+            st.image("gmf aeroasia logo new blue.png", use_container_width=True)
+            st.markdown("<br>", unsafe_allow_html=True)
+        except Exception as e:
+            st.markdown("<h3 style='color:#041226; font-weight:800; margin-top:0;'>🔒 Secure Gateway Login</h3>", unsafe_allow_html=True)
+            st.sidebar.warning("⚠️ Letakkan file 'gmf aeroasia logo new blue.png' di repositori GitHub Anda.")
+
         input_user = st.text_input("Username", placeholder="Masukkan ID personel Anda...", key="login_user")
         input_pass = st.text_input("Password", type="password", placeholder="••••••••", key="login_pass")
         
