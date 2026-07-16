@@ -29,7 +29,7 @@ USER_DATABASE = {
     "supervisor_gmf": {"password": "gmfsecure02", "role": "Maintenance Supervisor"}
 }
 
-# 🎨 CSS KUSTOM: EFEK APPLE PREMIUM TRANSLUCENT & SMOOTH ANIMATION
+# 🎨 CSS KUSTOM: RESOLUSI FIX POSISI POPOVER & INTEGRITAS STRAAMUT ANIMATION
 st.markdown("""
     <style>
         /* Import Font Montserrat */
@@ -39,7 +39,7 @@ st.markdown("""
             font-family: 'Montserrat', sans-serif !important;
         }
 
-        /* BACKGROUND UTAMA: Nuansa Biru/Abu Dingin Maskapai Modern */
+        /* BACKGROUND UTAMA */
         .stApp {
             background-image: linear-gradient(rgba(240, 244, 248, 0.93), rgba(240, 244, 248, 0.93)), 
                               url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1920&q=80');
@@ -48,7 +48,7 @@ st.markdown("""
             background-attachment: fixed;
         }
         
-        /* SIDEBAR: Biru Gelap Pekat */
+        /* SIDEBAR DECORATION */
         section[data-testid="stSidebar"] {
             background-color: #041226 !important; 
             border-right: 2px solid #005C97;
@@ -105,7 +105,6 @@ st.markdown("""
         }
         .sheets-btn:hover {
             background-color: #0A5C30 !important;
-            box-shadow: 0px 4px 15px rgba(16, 185, 129, 0.4);
             color: #FFFFFF !important;
             text-decoration: none;
         }
@@ -122,7 +121,6 @@ st.markdown("""
         }
         
         .gmf-banner h1 {
-            font-family: 'Montserrat', sans-serif !important;
             color: #FFFFFF !important;
             font-size: 42px !important;
             font-weight: 900 !important;
@@ -131,13 +129,11 @@ st.markdown("""
         }
         
         .gmf-banner p {
-            font-family: 'Montserrat', sans-serif !important;
             color: #00C9FF !important;
             font-size: 13px !important;
             font-weight: 700;
             letter-spacing: 5px;
             margin-top: 10px !important;
-            margin-bottom: 0px !important;
             text-transform: uppercase;
         }
 
@@ -160,15 +156,10 @@ st.markdown("""
             border-radius: 12px;
             box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05);
             border-top: 5px solid #005C97;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .kpi-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 30px 0 rgba(3, 18, 38, 0.1);
+            transition: transform 0.2s;
         }
         
         .kpi-title {
-            font-family: 'Montserrat', sans-serif !important;
             color: #556980;
             font-size: 11px;
             font-weight: 800;
@@ -178,7 +169,6 @@ st.markdown("""
         }
         
         .kpi-number {
-            font-family: 'Montserrat', sans-serif !important;
             font-size: 34px;
             font-weight: 900;
             color: #041226;
@@ -186,7 +176,6 @@ st.markdown("""
         }
 
         .section-header {
-            font-family: 'Montserrat', sans-serif !important;
             font-size: 18px;
             font-weight: 800;
             color: #041226;
@@ -209,19 +198,18 @@ st.markdown("""
         }
 
         /* =====================================================================
-           🍏 APPLE STYLE POPOVER DESIGN AND SPRING ANIMATION (IOS ANIMATION)
+           🍏 PERBAIKAN TOTAL: TOMBOL POPOVER & EFEK TRANSISI APPLE SPRING
            ===================================================================== */
         
-        /* Modifikasi Tombol Pemicu Popover */
+        /* Tombol Pemicu Popover */
         div[data-testid="stPopover"] > button {
-            background-color: rgba(255, 255, 255, 0.8) !important;
-            backdrop-filter: blur(10px) !important;
+            background-color: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(8px) !important;
             color: #041226 !important;
-            border: 1px solid rgba(0, 92, 151, 0.25) !important;
+            border: 1px solid rgba(0, 92, 151, 0.3) !important;
             font-weight: 700 !important;
-            border-radius: 12px !important; /* Sudut membulat halus khas iOS */
+            border-radius: 12px !important;
             padding: 12px 20px !important;
-            box-shadow: 0px 4px 12px rgba(3, 18, 38, 0.04) !important;
             transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
         }
         
@@ -229,33 +217,27 @@ st.markdown("""
             background-color: #FFFFFF !important;
             border-color: #005C97 !important;
             transform: scale(1.02);
-            box-shadow: 0px 8px 20px rgba(0, 92, 151, 0.12) !important;
         }
 
-        /* Frame Kontainer Jendela Pop-up Popover */
+        /* 🚨 FIX UTAMA: Mencegah Popover loncat ke kiri atas dengan tetap menjaga anchor relatif stPopover */
         div[data-testid="stPopoverBody"] {
-            background-color: rgba(255, 255, 255, 0.92) !important;
-            backdrop-filter: blur(20px) !important; /* Efek Kaca Buram Apple (Translucent) */
-            border-radius: 20px !important;
-            border: 1px solid rgba(255, 255, 255, 0.5) !important;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-            padding: 24px !important;
+            background-color: rgba(255, 255, 255, 0.94) !important;
+            backdrop-filter: blur(25px) !important;
+            border-radius: 18px !important;
+            border: 1px solid rgba(255, 255, 255, 0.6) !important;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12) !important;
+            padding: 20px !important;
             
-            /* Menjalankan Animasi Kustom iPhone Semasa Terbuka */
-            animation: appleSpringOpen 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.175) forwards !important;
-            transform-origin: top center;
+            /* Animasi iOS Spring Terlokalisasi */
+            animation: appleSpringScale 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.15) forwards !important;
+            transform-origin: top center !important;
         }
 
-        /* 📉 KEYFRAMES KUSTOM: Efek Membal Pegas Premium (Apple Spring Transition) */
-        @keyframes appleSpringOpen {
+        /* Keyframe Khusus Animasi Pegas tanpa mengubah posisi koordinat absolut (Khas iOS) */
+        @keyframes appleSpringScale {
             0% {
                 opacity: 0;
-                transform: scale(0.86) translateY(-10px);
-                filter: blur(4px);
-            }
-            70% {
-                transform: scale(1.01) translateY(1px);
-                filter: blur(0px);
+                transform: scale(0.9) translateY(-4px);
             }
             100% {
                 opacity: 1;
@@ -289,8 +271,8 @@ if not st.session_state.logged_in:
             try:
                 st.image("gmf aeroasia logo new blue.png", use_container_width=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-            except Exception as e:
-                st.markdown("<h3 style='color:#041226; font-weight:800; margin-top:0;'>🔒 Secure Gateway Login</h3>", unsafe_allow_html=True)
+            except:
+                pass
 
             input_user = st.text_input("Username", placeholder="Masukkan ID personel Anda...", key="login_user")
             input_pass = st.text_input("Password", type="password", placeholder="••••••••", key="login_pass")
@@ -304,10 +286,9 @@ if not st.session_state.logged_in:
                     st.session_state.logged_in = True
                     st.session_state.username = username_clean
                     st.session_state.role = USER_DATABASE[username_clean]["role"]
-                    st.toast("Akses berhasil! Menyiapkan dashboard...", icon="✅")
                     st.rerun()
                 else:
-                    st.error("🚨 Username atau password salah. Pastikan kredensial Anda valid.")
+                    st.error("🚨 Username atau password salah.")
                 
     st.stop()
 
@@ -330,27 +311,25 @@ def load_live_google_sheets():
     try:
         return pd.read_csv(LINK_EXPORT_GOOGLE_SHEETS)
     except Exception as e:
-        st.error(f"Gagal sinkronisasi ke Google Sheets: {e}")
-        return pd.DataFrame([{"ID": 551001, "Nama": "Ahmad", "Kualifikasi": "B737 Expert", "Lokasi": "DPS", "Status": "Active", "PPC Pengirim": "Offline Backup"}])
+        return pd.DataFrame([{"ID": 551001, "Nama": "Ahmad", "Kualifikasi": "B737 Engine Expert", "Lokasi": "DPS", "Status": "Active", "PPC Pengirim": "Offline Backup"}])
 
 df_mentah = load_live_google_sheets()
 
-# SIDEBAR CONTROL
+# 2. PANEL SIDEBAR KIRI
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 try:
     st.sidebar.image("gmf aeroasia logo new blue.png", use_container_width=True)
-except Exception as e:
+except:
     pass
 
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 📊 INPUT & UPDATE DATA")
-st.sidebar.markdown(f'<a href="{LINK_EDIT_GOOGLE_SHEETS}" target="_blank" class="sheets-btn"> 🟢 EDIT LIVE EXCEL SHEET</a>', unsafe_allow_html=True)
+st.sidebar.markdown(f'<a href="{LINK_EDIT_GOOGLE_SHEETS}" target="_blank" class="sheets-btn">🟢 EDIT LIVE EXCEL SHEET</a>', unsafe_allow_html=True)
 
 st.sidebar.markdown("### 🎛️ CONTROL PANEL")
 if st.sidebar.button("🔄 RE-SYNC LIVE DATA", use_container_width=True):
     st.cache_data.clear()
-    st.toast("Menghubungkan ke server GMF Database...", icon="📡")
     st.rerun()
 
 st.sidebar.markdown("---")
@@ -366,7 +345,7 @@ if st.sidebar.button("🔴 SECURE LOGOUT", use_container_width=True):
     st.session_state.logged_in = False
     st.rerun()
 
-# BANNER
+# BANNER HEAD
 st.markdown('<div class="gmf-banner"><h1>GMF AEROASIA</h1><p>Tactical Outstation Manpower Command Center</p></div>', unsafe_allow_html=True)
 
 # SEARCH ENGINE
@@ -382,37 +361,67 @@ if search_query:
 else:
     df_pekerja = df_mentah
 
-# KPI METRICS
-jumlah_di_cgk = len(df_pekerja[df_pekerja['Lokasi'].str.strip() == 'CGK'])
+# KPI CARDS
 total_personel = len(df_pekerja)
 personel_aktif = len(df_pekerja[df_pekerja['Status'].str.strip() == 'Active'])
 personel_standby = len(df_pekerja[df_pekerja['Status'].str.strip() == 'Standby'])
+jumlah_di_cgk = len(df_pekerja[df_pekerja['Lokasi'].str.strip() == 'CGK'])
 
 c1, c2, c3, c4 = st.columns(4)
 with c1:
-    st.markdown(f'<div class="kpi-card"><div class="kpi-title">📁 Total Fleet Manpower</div><div class="kpi-number">{total_personel}</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="kpi-card"><div class="kpi-title">📁 Total Fleet Manpower</div><div class="kpi-number">{total_personel} Px</div></div>', unsafe_allow_html=True)
 with c2:
-    st.markdown(f'<div class="kpi-card" style="border-top-color: #10B981;"><div class="kpi-title" style="color:#10B981;">🟢 Active On Duty</div><div class="kpi-number">{personel_aktif}</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="kpi-card" style="border-top-color: #10B981;"><div class="kpi-title" style="color:#10B981;">🟢 Active On Duty</div><div class="kpi-number">{personel_aktif} Px</div></div>', unsafe_allow_html=True)
 with c3:
-    st.markdown(f'<div class="kpi-card" style="border-top-color: #F59E0B;"><div class="kpi-title" style="color:#F59E0B;">🟡 Standby Alert</div><div class="kpi-number">{personel_standby}</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="kpi-card" style="border-top-color: #F59E0B;"><div class="kpi-title" style="color:#F59E0B;">🟡 Standby Alert</div><div class="kpi-number">{personel_standby} Px</div></div>', unsafe_allow_html=True)
 with c4:
-    st.markdown(f'<div class="kpi-card" style="border-top-color: #3B82F6;"><div class="kpi-title" style="color:#3B82F6;">🔵 CGK Ready Resource</div><div class="kpi-number">{jumlah_di_cgk}</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="kpi-card" style="border-top-color: #3B82F6;"><div class="kpi-title" style="color:#3B82F6;">🔵 CGK Ready Resource</div><div class="kpi-number">{jumlah_di_cgk} Px</div></div>', unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# MAIN LAYOUT
+# 6. LAYOUT UTAMA MALAM
 col_left, col_right = st.columns([4, 3])
 
 with col_left:
     st.markdown("<div class='section-header'>🗺️ Live Tactical Spatial Distribution</div>", unsafe_allow_html=True)
     st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
     
+    # Inisialisasi Peta Utama
     m = folium.Map(location=[-2.5, 118.0], zoom_start=5, tiles="OpenStreetMap")
+    
+    # 🚨 PENGEMBALIAN FITUR MARKER PER MANPOWER SECARA UTUH
     for lok, koordinat in DOKUMEN_KOORDINAT.items():
         sub_df = df_pekerja[df_pekerja['Lokasi'].str.strip() == lok]
         if not sub_df.empty:
             total_di_lokasi = len(sub_df)
-            folium.Marker(location=koordinat, tooltip=f"Hub {lok}: {total_di_lokasi} Px").add_to(m)
+            warna_pin = "red" if lok == "CGK" else ("green" if any(sub_df['Status'].str.strip() == 'Active') else "orange")
+            
+            # Membuat struktur balon tabel informasi per personel yang bertugas di bandara tersebut
+            popup_html = f"""
+            <div style='font-family: "Montserrat", sans-serif; color: #1e293b; min-width:240px;'>
+                <h4 style='margin:0 0 5px 0; color:#1e3a8a; font-weight:800;'>Station Hub: {lok}</h4>
+                <p style='margin:0 0 8px 0; font-size:12px;'>Total Resource: <b>{total_di_lokasi} Personel</b></p>
+                <table style='width:100%; font-size:11px; border-collapse: collapse;'>
+                    <tr style='background-color:#f1f5f9; text-align:left;'>
+                        <th style='padding:4px; font-weight:700;'>Nama</th>
+                        <th style='padding:4px; font-weight:700;'>Kualifikasi</th>
+                    </tr>
+            """
+            for _, row in sub_df.iterrows():
+                popup_html += f"""
+                <tr>
+                    <td style='padding:4px; border-bottom:1px solid #e2e8f0;'>{row['Nama']}</td>
+                    <td style='padding:4px; border-bottom:1px solid #e2e8f0;'>{row['Kualifikasi']}</td>
+                </tr>
+                """
+            popup_html += "</table></div>"
+            
+            folium.Marker(
+                location=koordinat,
+                popup=folium.Popup(popup_html, max_width=380),
+                tooltip=f"Hub {lok}: {total_di_lokasi} Personnel",
+                icon=folium.Icon(color=warna_pin, icon="info-sign")
+            ).add_to(m)
             
     st_folium(m, width="100%", height=520)
     st.markdown('</div>', unsafe_allow_html=True)
@@ -428,18 +437,20 @@ with col_right:
     pop_col1, pop_col2 = st.columns(2)
     
     with pop_col1:
-        # 🍏 Widget Popover 1 dengan Animasi iOS Kustom
+        # 🍏 Popover 1: Duduk Presisi dengan Efek Spring Pegas iOS Kustom
         with st.popover("⚙️ Open Status Telemetry Map", use_container_width=True):
-            st.markdown("<h4 style='color:#041226; font-size:15px; font-weight:800; margin-bottom:10px;'>📊 Duty Distribution</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='color:#041226; font-size:14px; font-weight:800; margin:0;'>📊 Duty Distribution Status</h4>", unsafe_allow_html=True)
+            st.write("Analitik pembagian waktu siaga personil stasiun luar.")
             if not df_pekerja.empty:
-                st.bar_chart(df_pekerja['Status'].value_counts(), color="#107C41", height=180)
+                st.bar_chart(df_pekerja['Status'].value_counts(), color="#107C41", height=200)
                 
     with pop_col2:
-        # 🍏 Widget Popover 2 dengan Animasi iOS Kustom
+        # 🍏 Popover 2: Duduk Presisi dengan Efek Spring Pegas iOS Kustom
         with st.popover("✈️ Inspect Fleet Capabilities", use_container_width=True):
-            st.markdown("<h4 style='color:#041226; font-size:15px; font-weight:800; margin-bottom:10px;'>🚀 Skillset Capabilities</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='color:#041226; font-size:14px; font-weight:800; margin:0;'>🚀 Fleet Skillset Capability</h4>", unsafe_allow_html=True)
+            st.write("Kuantitas keahlian tipe pesawat yang bersertifikasi.")
             if not df_pekerja.empty:
-                st.bar_chart(df_pekerja['Kualifikasi'].value_counts().head(5), color="#F59E0B", height=180)
+                st.bar_chart(df_pekerja['Kualifikasi'].value_counts().head(5), color="#F59E0B", height=200)
                 
     st.markdown("<div class='section-header'>📈 Hub Resource Strength Breakdown</div>", unsafe_allow_html=True)
     st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
