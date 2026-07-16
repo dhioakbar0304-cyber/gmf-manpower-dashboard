@@ -40,18 +40,18 @@ st.markdown("""
             border-right: 2px solid #005C97;
         }
         
-        /* Sidebar Link/Teks Putih Bersih & Montserrat */
-        section[data-testid="stSidebar"] *, 
-        section[data-testid="stSidebar"] span, 
-        section[data-testid="stSidebar"] p, 
-        section[data-testid="stSidebar"] h3 {
+        /* SIDEBAR TEXT (Hanya menyasar konten user agar tidak merusak tombol collapse bawaan Streamlit) */
+        div[data-testid="stSidebarUserContent"] p,
+        div[data-testid="stSidebarUserContent"] span,
+        div[data-testid="stSidebarUserContent"] h3,
+        div[data-testid="stSidebarUserContent"] label {
             font-family: 'Montserrat', sans-serif !important;
             color: #FFFFFF !important;
             font-weight: 500;
         }
         
         /* Membuang block abu-abu pada teks kode di sidebar */
-        section[data-testid="stSidebar"] code {
+        div[data-testid="stSidebarUserContent"] code {
             background-color: transparent !important;
             color: #38BDF8 !important;
             font-size: 13px !important;
@@ -228,7 +228,7 @@ df_mentah = load_live_google_sheets()
 # 2. PANEL SIDEBAR KIRI
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 
-# 🏆 LOGO GMF LOKAL (Dipanggil langsung dari repositori secara aman)
+# 🏆 LOGO GMF LOKAL (Sesuai nama file Anda)
 try:
     st.sidebar.image("gmf aeroasia logo new blue.png", use_container_width=True)
 except Exception as e:
