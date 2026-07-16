@@ -3,6 +3,7 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 import ssl
+import os
 import time
 from datetime import datetime
 
@@ -16,6 +17,11 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# 🏢 CONFIG LOGO UTAMA GMF AEROASIA
+# Silakan letakkan file logo.png Anda di folder yang sama dengan script ini.
+# Atau Anda juga bisa langsung memasukkan URL gambar web resmi logo GMF di sini.
+LOGO_SOURCE = "logo.png" 
 
 # INITIALIZE SESSION STATE
 if "logged_in" not in st.session_state:
@@ -37,7 +43,7 @@ USER_DATABASE = {
     "supervisor_gmf": {"password": "gmfsecure02", "role": "Maintenance Supervisor"}
 }
 
-# 🎨 CSS KUSTOM PREMIUM (FIX VISIBILITY & ANTI-OVERLAP)
+# 🎨 CSS KUSTOM PREMIUM (FIX VISIBILITY, LOGO ALIGNMENT, & ANTI-OVERLAP)
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
@@ -76,7 +82,7 @@ st.markdown("""
             box-shadow: 0 4px 15px rgba(0, 201, 255, 0.2) !important;
         }
         
-        /* SIDEBAR & BANNER */
+        /* SIDEBAR BRANDING */
         section[data-testid="stSidebar"] { background-color: #041226 !important; border-right: 2px solid #005C97; }
         div[data-testid="stSidebarUserContent"] p, div[data-testid="stSidebarUserContent"] span, 
         div[data-testid="stSidebarUserContent"] h3, div[data-testid="stSidebarUserContent"] label {
@@ -86,31 +92,43 @@ st.markdown("""
         div.stButton > button:hover { background-color: #003F6B !important; box-shadow: 0px 4px 15px rgba(0, 201, 255, 0.4); }
         .sheets-btn { display: block; text-align: center; background-color: #107C41 !important; color: #FFFFFF !important; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; text-decoration: none; margin-top: 10px; margin-bottom: 20px; border: 1px solid #10B981; }
         
-        .gmf-banner { background: linear-gradient(135deg, #041226 0%, #002D54 100%); padding: 35px 20px; border-radius: 14px; color: #FFFFFF !important; text-align: center; margin-bottom: 30px; border-bottom: 5px solid #00C9FF; box-shadow: 0 10px 30px rgba(3, 18, 38, 0.25); }
-        .gmf-banner h1 { font-size: 42px !important; font-weight: 900 !important; letter-spacing: 2px; margin: 0 !important; color: #FFFFFF !important; }
-        .gmf-banner p { color: #00C9FF !important; font-size: 13px !important; font-weight: 700; letter-spacing: 5px; margin-top: 10px !important; text-transform: uppercase; }
+        /* 🏢 WRAPPER BANNER DENGAN BACKGROUND DAN GLOW EFFECT */
+        .gmf-banner-bg { 
+            background: linear-gradient(135deg, #041226 0%, #002D54 100%); 
+            padding: 25px 35px; 
+            border-radius: 14px; 
+            margin-bottom: 30px; 
+            border-bottom: 5px solid #00C9FF; 
+            box-shadow: 0 10px 30px rgba(3, 18, 38, 0.25); 
+        }
+        .gmf-banner-text h1 { font-size: 38px !important; font-weight: 900 !important; letter-spacing: 2px; margin: 0 !important; color: #FFFFFF !important; padding-top: 5px; }
+        .gmf-banner-text p { color: #00C9FF !important; font-size: 13px !important; font-weight: 700; letter-spacing: 4px; margin-top: 5px !important; text-transform: uppercase; }
         
+        /* LOGIN CARD */
         .login-card { background-color: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); padding: 40px; border-radius: 16px; box-shadow: 0 15px 35px rgba(4, 18, 38, 0.15); border: 1px solid rgba(255, 255, 255, 0.6); border-top: 5px solid #005C97; }
+        
+        /* KPI BLOCKS */
         .kpi-card { background-color: rgba(255, 255, 255, 0.92); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); padding: 20px; border-radius: 12px; box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05); border-top: 5px solid #005C97; }
         .kpi-title { color: #556980; font-size: 11px; font-weight: 800; margin-bottom: 6px; letter-spacing: 1.2px; text-transform: uppercase; }
-        .kpi-number { font-size: 28px; font-weight: 900; color: #041226; margin: 0; }
+        .kpi-number { font-size: 26px; font-weight: 900; color: #041226; margin: 0; }
+        
         .section-header { font-size: 18px; font-weight: 800; color: #041226; margin-top: 25px; margin-bottom: 15px; border-left: 5px solid #005C97; padding-left: 12px; text-transform: uppercase; }
         .floating-panel { background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 12px; padding: 20px; box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05); margin-bottom: 20px; }
 
-        /* STATUS WARNA & BLINKING EFFECT */
+        /* STATUS BADGES */
         @keyframes blinker { 50% { opacity: 0.2; } }
         .status-active { color: #10B981; font-weight: 800; }
         .status-standby { color: #F59E0B; font-weight: 800; }
         .status-offline { color: #EF4444; font-weight: 900; animation: blinker 1s linear infinite; }
         
-        /* TABLE CONTAINER & STYLE */
+        /* TABLE LEDGER SECURITY */
         .table-wrapper { width: 100% !important; overflow-x: auto !important; }
         .styled-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; background-color: transparent; }
         .styled-table thead tr { background-color: #041226; color: #ffffff; }
         .styled-table th, .styled-table td { padding: 12px 15px; border-bottom: 1px solid #E2E8F0; white-space: nowrap; }
         .styled-table tbody tr:nth-of-type(even) { background-color: #F8FAFC; }
 
-        /* Activity Feed */
+        /* Live Activity Items */
         .activity-item { padding: 10px 0; border-bottom: 1px solid #E2E8F0; font-size: 12px; color: #334155; }
         .activity-time { font-weight: 800; color: #005C97; margin-right: 10px; }
     </style>
@@ -198,11 +216,28 @@ if st.sidebar.button("🔴 SECURE LOGOUT", use_container_width=True):
     st.session_state.logged_in = False
     st.rerun()
 
-# MAIN BANNER
-st.markdown('<div class="gmf-banner"><h1>GMF AEROASIA</h1><p>Tactical Outstation Manpower Command Center</p></div>', unsafe_allow_html=True)
+# 🏢 MAIN BANNER DENGAN BLEND LOGO GMF AEROASIA
+st.markdown('<div class="gmf-banner-bg">', unsafe_allow_html=True)
+ban_col1, ban_col2 = st.columns([1, 6])
+with ban_col1:
+    if os.path.exists(LOGO_SOURCE) or LOGO_SOURCE.startswith("http"):
+        try:
+            st.image(LOGO_SOURCE, use_container_width=True)
+        except Exception:
+            st.markdown('<div style="font-size: 50px; text-align: center; margin-top: 5px;">✈️</div>', unsafe_allow_html=True)
+    else:
+        st.markdown('<div style="font-size: 50px; text-align: center; margin-top: 5px;">✈️</div>', unsafe_allow_html=True)
+with ban_col2:
+    st.markdown("""
+        <div class="gmf-banner-text">
+            <h1>GMF AEROASIA</h1>
+            <p>Tactical Outstation Manpower Command Center</p>
+        </div>
+    """, unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-# SEARCH CONTAINER (WARNA BORDER TEGAS)
-search_query = st.text_input("🔎 Pencarian Berdasarkan Nama / Kualifikasi / Stasiun Hub:", placeholder="Ketik di sini untuk memfilter data manpower...")
+# SEARCH CONTAINER (WARNA HIGH-CONTRAST)
+search_query = st.text_input("🔎 Pencarian Berdasarkan Nama / Kualifikasi / Stasiun Hub:", placeholder="Ketik nama personel atau kode stasiun di sini...")
 
 if search_query:
     df_pekerja = df_mentah[
@@ -213,7 +248,7 @@ if search_query:
 else:
     df_pekerja = df_mentah
 
-# KPI BLOCKS (SATUAN PX GANTI KE PERSONEL)
+# KPI BLOCKS (SATUAN SUDAH BERGANTI JADI PERSONEL)
 total_personel = len(df_pekerja)
 personel_aktif = len(df_pekerja[df_pekerja['Status'].astype(str).str.strip().str.lower() == 'active'])
 personel_standby = len(df_pekerja[df_pekerja['Status'].astype(str).str.strip().str.lower() == 'standby'])
@@ -225,7 +260,7 @@ c2.markdown(f'<div class="kpi-card" style="border-top-color: #10B981;"><div clas
 c3.markdown(f'<div class="kpi-card" style="border-top-color: #F59E0B;"><div class="kpi-title" style="color:#F59E0B;">🟡 Standby Alert</div><div class="kpi-number">{personel_standby} Personel</div></div>', unsafe_allow_html=True)
 c4.markdown(f'<div class="kpi-card" style="border-top-color: #3B82F6;"><div class="kpi-title" style="color:#3B82F6;">🔵 CGK Ready Resource</div><div class="kpi-number">{jumlah_di_cgk} Personel</div></div>', unsafe_allow_html=True)
 
-# 6. ROW ATAS: MAP UTAMA VS OPERATIONAL ANALYTICS
+# ROW ATAS: MAP DISTRIBUSI VS LIVE TELEMETRY LOGS
 col_left, col_right = st.columns([55, 45])
 
 with col_left:
@@ -262,7 +297,6 @@ with col_left:
 with col_right:
     st.markdown("<div class='section-header'>📊 Operational Telemetry & Logs</div>", unsafe_allow_html=True)
     
-    # CHARTS INTERAKTIF PADA POPOVER
     pop_col1, pop_col2 = st.columns(2)
     with pop_col1:
         with st.popover("⚙️ Status Telemetry Chart", use_container_width=True):
@@ -271,7 +305,6 @@ with col_right:
         with st.popover("✈️ Core Fleet Capabilities", use_container_width=True):
             if not df_pekerja.empty: st.bar_chart(df_pekerja['Kualifikasi'].value_counts().head(5), color="#F59E0B", height=150)
 
-    # SECURE LIVE ACTIVITY FEED & UTILIZATION LOAD
     st.markdown('<div class="floating-panel" style="margin-top: 10px;">', unsafe_allow_html=True)
     utilization_rate = int((personel_aktif / total_personel) * 100) if total_personel > 0 else 0
     st.markdown(f"""
@@ -288,7 +321,7 @@ with col_right:
     st.markdown(logs_html, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# 🚨 ROW BAWAH (ISOLASI TOTAL): SECTION MASTER LEDGER FULL WIDTH - ANTI TABRAKAN!
+# 🚨 ROW BAWAH (ISOLASI PARALEL): FULL-WIDTH ANTI TABRAKAN
 st.markdown("<div class='section-header'>📋 Personnel Directory Master Ledger</div>", unsafe_allow_html=True)
 st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
 st.markdown('<div class="table-wrapper">', unsafe_allow_html=True)
