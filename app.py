@@ -3,255 +3,458 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 import ssl
-from typing import Dict, Tuple
+import time
 
-# Bypass SSL untuk environment tertentu
+# Bypass verifikasi SSL Certificate pada macOS
 ssl._create_default_https_context = ssl._create_unverified_context
 
-# ==============================================================================
-# CONFIG & DATA LAYER
-# ==============================================================================
-SHEET_EXPORT_URL = "https://docs.google.com/spreadsheets/d/1IPuSFsMxZCKQBcL7NBoE-JIsQkG7-DePII0I2b8x9Vk/export?format=csv&gid=827445294"
-SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1IPuSFsMxZCKQBcL7NBoE-JIsQkG7-DePII0I2b8x9Vk/edit"
+# 1. KONFIGURASI HALAMAN UTAMA (Aviation & Corporate Standard)
+st.set_page_config(
+    page_title="GMF AeroAsia - Manpower Allocation",
+    page_icon="✈️", 
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-STATION_COORDINATES: Dict[str, Tuple[float, float]] = {
-    "CGK": (-6.1256, 106.6559), "KNO": (3.6422, 98.8853),
-    "DPS": (-8.7481, 115.1674), "SUB": (-7.3798, 112.7873),
-    "UPG": (-5.0616, 119.5523), "DJJ": (-2.5783, 140.5167),
-    "BTH": (1.1211, 104.1182), "BPN": (-1.2683, 116.8944)
+# 🔑 INITIALIZE SESSION STATE UNTUK LOGIN
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "username" not in st.session_state:
+    st.session_state.username = ""
+if "role" not in st.session_state:
+    st.session_state.role = ""
+
+# 🎯 DATABASE USER
+USER_DATABASE = {
+    "dhioakbar0304": {"password": "gmfsecure01", "role": "PPC Planning & Control"},
+    "supervisor_gmf": {"password": "gmfsecure02", "role": "Maintenance Supervisor"}
 }
 
-@st.cache_data(ttl=300, show_spinner=False)
-def fetch_manpower_data() -> pd.DataFrame:
-    try:
-        return pd.read_csv(SHEET_EXPORT_URL)
-    except:
-        return pd.DataFrame([{"ID": 551001, "Nama": "System Admin", "Kualifikasi": "A330/B777 Expert", "Lokasi": "CGK", "Status": "Active"}])
-
-# ==============================================================================
-# UI INJECTION: PREMIUM DUAL-FONT & HARMONIC COLORS
-# ==============================================================================
-def inject_premium_ui():
-    st.markdown("""
-        <style>
-            /* Mengimpor Poppins untuk Judul dan Inter untuk Teks Biasa */
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap');
-            
-            /* GLOBAL CANVAS - Soft Light Clean Theme */
-            .stApp {
-                background-color: #F4F7F9 !important;
-                color: #1E293B !important;
-                font-family: 'Inter', sans-serif !important;
-            }
-
-            /* =========================================
-               SIDEBAR KIRI (Fokus Perbaikan Permintaan)
-               ========================================= */
-            section[data-testid="stSidebar"] {
-                background: linear-gradient(180deg, #0F2027 0%, #203A43 50%, #2C5364 100%) !important;
-                border-right: none !important;
-                box-shadow: 4px 0 15px rgba(0,0,0,0.05);
-            }
-            
-            /* Merapikan Font di Sidebar Kiri agar elegan dan menyatu */
-            div[data-testid="stSidebarUserContent"] p, 
-            div[data-testid="stSidebarUserContent"] h3,
-            div[data-testid="stSidebarUserContent"] label,
-            div[data-testid="stSidebarUserContent"] span {
-                font-family: 'Poppins', sans-serif !important;
-                color: #FFFFFF !important;
-                letter-spacing: 0.3px;
-            }
-
-            div[data-testid="stSidebarUserContent"] h3 {
-                font-weight: 700 !important;
-                font-size: 1.2rem !important;
-                border-bottom: 1px solid rgba(255,255,255,0.1);
-                padding-bottom: 10px;
-                margin-bottom: 15px;
-            }
-
-            /* =========================================
-               KARTU METRIK & DASHBOARD (Warna Dinamis)
-               ========================================= */
-            .metric-card {
-                background: #FFFFFF;
-                border-radius: 16px;
-                padding: 20px;
-                box-shadow: 0 10px 20px rgba(15, 23, 42, 0.04);
-                transition: transform 0.2s ease;
-                border: 1px solid #E2E8F0;
-                border-left: 5px solid; /* Aksen warna di kiri */
-            }
-            .metric-card:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
-            }
-            .metric-title {
-                font-family: 'Poppins', sans-serif;
-                color: #64748B;
-                font-size: 0.85rem;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }
-            .metric-value {
-                font-family: 'Poppins', sans-serif;
-                font-size: 2.2rem;
-                font-weight: 800;
-                color: #0F172A;
-                margin-top: 5px;
-            }
-
-            /* =========================================
-               HEADER & CONTAINER UTAMA
-               ========================================= */
-            h1, h2, h3, .section-header {
-                font-family: 'Poppins', sans-serif !important;
-                color: #0F172A !important;
-            }
-            
-            .section-header {
-                font-size: 1.25rem;
-                font-weight: 700;
-                margin-top: 1rem;
-                margin-bottom: 1rem;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .main-panel {
-                background: #FFFFFF;
-                border-radius: 16px;
-                padding: 24px;
-                box-shadow: 0 10px 20px rgba(15, 23, 42, 0.03);
-                border: 1px solid #E2E8F0;
-                margin-bottom: 1.5rem;
-            }
-
-            /* Tombol Aksi */
-            div.stButton > button {
-                font-family: 'Poppins', sans-serif !important;
-                background-color: #2563EB !important;
-                color: #FFFFFF !important;
-                border-radius: 8px !important;
-                border: none !important;
-                font-weight: 600 !important;
-                padding: 10px 20px !important;
-                box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
-            }
-            div.stButton > button:hover {
-                background-color: #1D4ED8 !important;
-                box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
-            }
-        </style>
-    """, unsafe_allow_html=True)
-
-# ==============================================================================
-# MAIN DASHBOARD
-# ==============================================================================
-def main():
-    st.set_page_config(page_title="GMF AeroAsia | Outstation Command", layout="wide", initial_sidebar_state="expanded")
-    inject_premium_ui()
-    
-    # --- SIDEBAR (Kombinasi warna elegan) ---
-    with st.sidebar:
-        st.markdown("<h3>🚀 TACTICAL COMMAND</h3>", unsafe_allow_html=True)
+# 🎨 CSS KUSTOM: RESOLUSI FIX POSISI POPOVER & INTEGRITAS STRAAMUT ANIMATION
+st.markdown("""
+    <style>
+        /* Import Font Montserrat */
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
         
-        st.markdown(f"""
-            <a href="{SHEET_EDIT_URL}" target="_blank" style="text-decoration: none;">
-                <div style="background-color: #10B981; color: white; padding: 12px; border-radius: 8px; text-align: center; font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); margin-bottom: 15px;">
-                    📝 Edit Master Database
+        html, body, [class*="css"] {
+            font-family: 'Montserrat', sans-serif !important;
+        }
+
+        /* BACKGROUND UTAMA */
+        .stApp {
+            background-image: linear-gradient(rgba(240, 244, 248, 0.93), rgba(240, 244, 248, 0.93)), 
+                              url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        
+        /* SIDEBAR DECORATION */
+        section[data-testid="stSidebar"] {
+            background-color: #041226 !important; 
+            border-right: 2px solid #005C97;
+        }
+        
+        div[data-testid="stSidebarUserContent"] p,
+        div[data-testid="stSidebarUserContent"] span,
+        div[data-testid="stSidebarUserContent"] h3,
+        div[data-testid="stSidebarUserContent"] label {
+            font-family: 'Montserrat', sans-serif !important;
+            color: #FFFFFF !important;
+            font-weight: 500;
+        }
+        
+        div.stButton > button {
+            background-color: #005C97 !important;
+            color: #FFFFFF !important;
+            font-family: 'Montserrat', sans-serif !important;
+            border-radius: 8px !important;
+            border: 1px solid #00C9FF !important;
+            font-weight: 700 !important;
+            padding: 10px !important;
+            transition: all 0.3s ease;
+        }
+        div.stButton > button:hover {
+            background-color: #003F6B !important;
+            box-shadow: 0px 4px 15px rgba(0, 201, 255, 0.4);
+        }
+        
+        .sheets-btn {
+            display: block;
+            text-align: center;
+            background-color: #107C41 !important;
+            color: #FFFFFF !important;
+            padding: 12px;
+            font-family: 'Montserrat', sans-serif !important;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            text-decoration: none;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #10B981;
+            transition: all 0.3s ease;
+            box-shadow: 0px 4px 10px rgba(16, 124, 65, 0.2);
+        }
+        .sheets-btn:hover {
+            background-color: #0A5C30 !important;
+            color: #FFFFFF !important;
+            text-decoration: none;
+        }
+        
+        .gmf-banner {
+            background: linear-gradient(135deg, #041226 0%, #002D54 100%);
+            padding: 35px 20px;
+            border-radius: 14px;
+            color: #FFFFFF !important;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 5px solid #00C9FF;
+            box-shadow: 0 10px 30px rgba(3, 18, 38, 0.25);
+        }
+        
+        .gmf-banner h1 {
+            color: #FFFFFF !important;
+            font-size: 42px !important;
+            font-weight: 900 !important;
+            letter-spacing: 2px;
+            margin: 0 !important;
+        }
+        
+        .gmf-banner p {
+            color: #00C9FF !important;
+            font-size: 13px !important;
+            font-weight: 700;
+            letter-spacing: 5px;
+            margin-top: 10px !important;
+            text-transform: uppercase;
+        }
+
+        /* Styling Form Login agar tidak terkesan melayang dan kopong */
+        .login-card {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(4, 18, 38, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-top: 5px solid #005C97;
+        }
+
+        div[data-testid="stTextInput"] input {
+            font-family: 'Montserrat', sans-serif !important;
+            border-radius: 8px !important;
+            border: 2px solid #E2E8F0 !important;
+            padding: 12px !important;
+            font-size: 15px !important;
+            color: #041226 !important;
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            font-weight: 600 !important;
+        }
+
+        .kpi-card {
+            background-color: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05);
+            border-top: 5px solid #005C97;
+            transition: transform 0.2s;
+        }
+        
+        .kpi-title {
+            color: #556980;
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+        
+        .kpi-number {
+            font-size: 34px;
+            font-weight: 900;
+            color: #041226;
+            margin: 0;
+        }
+
+        .section-header {
+            font-size: 18px;
+            font-weight: 800;
+            color: #041226;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 5px solid #005C97;
+            padding-left: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .floating-panel {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05);
+            margin-bottom: 20px;
+        }
+
+        /* Activity Feed Item (Untuk menambal ruang kosong di kanan) */
+        .activity-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #E2E8F0;
+            font-size: 12px;
+            color: #334155;
+        }
+        .activity-time {
+            font-weight: 700;
+            color: #005C97;
+            margin-right: 10px;
+        }
+
+        /* Tombol Pemicu Popover */
+        div[data-testid="stPopover"] > button {
+            background-color: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(8px) !important;
+            color: #041226 !important;
+            border: 1px solid rgba(0, 92, 151, 0.3) !important;
+            font-weight: 700 !important;
+            border-radius: 12px !important;
+            padding: 12px 20px !important;
+            transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        }
+        
+        div[data-testid="stPopover"] > button:hover {
+            background-color: #FFFFFF !important;
+            border-color: #005C97 !important;
+            transform: scale(1.02);
+        }
+
+        /* 🚨 FIX UTAMA: Animasi iOS Spring Terlokalisasi */
+        div[data-testid="stPopoverBody"] {
+            background-color: rgba(255, 255, 255, 0.94) !important;
+            backdrop-filter: blur(25px) !important;
+            border-radius: 18px !important;
+            border: 1px solid rgba(255, 255, 255, 0.6) !important;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12) !important;
+            padding: 20px !important;
+            animation: appleSpringScale 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.15) forwards !important;
+            transform-origin: top center !important;
+        }
+
+        @keyframes appleSpringScale {
+            0% { opacity: 0; transform: scale(0.9) translateY(-4px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+
+# =====================================================================
+# 🔑 LOGIN PAGE CONTROLLER (Dipercantik agar tidak terkesan melayang)
+# =====================================================================
+if not st.session_state.logged_in:
+    col_space_l, col_login_core, col_space_r = st.columns([1, 1.2, 1])
+    
+    with col_login_core:
+        st.markdown("<br><br><br>", unsafe_allow_html=True)
+        st.markdown("""
+            <div class="login-card">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <h2 style="color: #041226; font-weight: 900; letter-spacing: 1px; font-size: 26px; margin:0;">
+                        TACTICAL COMMAND
+                    </h2>
+                    <p style="color: #005C97; font-weight: bold; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-top:5px;">
+                        GMF AeroAsia - Outstation Division
+                    </p>
                 </div>
-            </a>
         """, unsafe_allow_html=True)
         
-        if st.button("🔄 Sync Database", use_container_width=True):
-            fetch_manpower_data.clear()
-            st.rerun()
-            
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        st.markdown("<div style='color: #94A3B8; font-family: Poppins; font-size: 12px; text-transform: uppercase;'>Current Operator</div>", unsafe_allow_html=True)
-        st.markdown("<div style='color: #38BDF8; font-family: Poppins; font-size: 16px; font-weight: 700;'>ADMINISTRATOR</div>", unsafe_allow_html=True)
+        input_user = st.text_input("Username", placeholder="Masukkan ID personel Anda...", key="login_user")
+        input_pass = st.text_input("Password", type="password", placeholder="••••••••", key="login_pass")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        btn_login = st.button("AUTHENTICATE SYSTEM 🔓", use_container_width=True)
+        
+        if btn_login:
+            username_clean = input_user.strip()
+            if username_clean in USER_DATABASE and USER_DATABASE[username_clean]["password"] == input_pass:
+                st.session_state.logged_in = True
+                st.session_state.username = username_clean
+                st.session_state.role = USER_DATABASE[username_clean]["role"]
+                st.rerun()
+            else:
+                st.error("🚨 Username atau password salah.")
+        
+        st.markdown("</div>", unsafe_allow_html=True) # Close login-card
+    st.stop()
 
-    # --- HEADER UTAMA ---
-    st.markdown("""
-        <div style='background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); padding: 30px; border-radius: 20px; color: white; box-shadow: 0 10px 30px rgba(15,23,42,0.15); margin-bottom: 30px;'>
-            <h1 style='color: white !important; margin: 0; font-size: 2.2rem;'>Outstation Manpower Command Center</h1>
-            <p style='color: #94A3B8; font-family: Inter, sans-serif; margin: 5px 0 0 0; font-size: 1rem;'>Live Tactical Resource Allocation & Telemetry Dashboard</p>
+
+# =====================================================================
+# 💻 MAIN DASHBOARD APP
+# =====================================================================
+
+DOKUMEN_KOORDINAT = {
+    "CGK": [-6.1256, 106.6559], "KNO": [3.6422, 98.8853],
+    "DPS": [-8.7481, 115.1674], "SUB": [-7.3798, 112.7873],
+    "UPG": [-5.0616, 119.5523], "DJJ": [-2.5783, 140.5167],
+    "BTH": [1.1211, 104.1182], "BPN": [-1.2683, 116.8944]
+}
+
+LINK_EDIT_GOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1IPuSFsMxZCKQBcL7NBoE-JIsQkG7-DePII0I2b8x9Vk/edit"
+LINK_EXPORT_GOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1IPuSFsMxZCKQBcL7NBoE-JIsQkG7-DePII0I2b8x9Vk/export?format=csv&gid=827445294"
+
+@st.cache_data(ttl=60)
+def load_live_google_sheets():
+    try:
+        return pd.read_csv(LINK_EXPORT_GOOGLE_SHEETS)
+    except Exception as e:
+        return pd.DataFrame([{"ID": 551001, "Nama": "Ahmad", "Kualifikasi": "B737 Engine Expert", "Lokasi": "DPS", "Status": "Active", "PPC Pengirim": "Offline Backup"}])
+
+df_mentah = load_live_google_sheets()
+
+# 2. PANEL SIDEBAR KIRI
+st.sidebar.markdown("<br>", unsafe_allow_html=True)
+
+st.sidebar.markdown("### 📊 INPUT & UPDATE DATA")
+st.sidebar.markdown(f'<a href="{LINK_EDIT_GOOGLE_SHEETS}" target="_blank" class="sheets-btn">🟢 EDIT LIVE EXCEL SHEET</a>', unsafe_allow_html=True)
+
+st.sidebar.markdown("### 🎛️ CONTROL PANEL")
+if st.sidebar.button("🔄 RE-SYNC LIVE DATA", use_container_width=True):
+    st.cache_data.clear()
+    st.rerun()
+
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 👤 MONITOR PROFILE")
+st.sidebar.markdown(f"""
+<div style="line-height: 2.0; font-size: 13px; margin-bottom: 20px;">
+    <p style="margin: 0;">👤 <b>User Authorized:</b><br><span style="color: #00C9FF !important; font-weight: bold; font-size:14px;">{st.session_state.username}</span></p><br>
+    <p style="margin: 0;">💼 <b>Role Account:</b><br><span style="color: #00C9FF !important; font-weight: bold; font-size:14px;">{st.session_state.role}</span></p>
+</div>
+""", unsafe_allow_html=True)
+
+if st.sidebar.button("🔴 SECURE LOGOUT", use_container_width=True):
+    st.session_state.logged_in = False
+    st.rerun()
+
+# BANNER HEAD
+st.markdown('<div class="gmf-banner"><h1>GMF AEROASIA</h1><p>Tactical Outstation Manpower Command Center</p></div>', unsafe_allow_html=True)
+
+# SEARCH ENGINE
+st.markdown("<div class='section-header'>🔎 Tactical Resource Search Engine</div>", unsafe_allow_html=True)
+search_query = st.text_input("Ketik di bawah ini untuk mencari personel atau kualifikasi:", "")
+
+if search_query:
+    df_pekerja = df_mentah[
+        df_mentah['Nama'].astype(str).str.contains(search_query, case=False, na=False) |
+        df_mentah['Kualifikasi'].astype(str).str.contains(search_query, case=False, na=False) |
+        df_mentah['Lokasi'].astype(str).str.contains(search_query, case=False, na=False)
+    ]
+else:
+    df_pekerja = df_mentah
+
+# KPI CARDS
+total_personel = len(df_pekerja)
+personel_aktif = len(df_pekerja[df_pekerja['Status'].astype(str).str.strip() == 'Active'])
+personel_standby = len(df_pekerja[df_pekerja['Status'].astype(str).str.strip() == 'Standby'])
+jumlah_di_cgk = len(df_pekerja[df_pekerja['Lokasi'].astype(str).str.strip() == 'CGK'])
+
+c1, c2, c3, c4 = st.columns(4)
+c1.markdown(f'<div class="kpi-card"><div class="kpi-title">📁 Total Fleet Manpower</div><div class="kpi-number">{total_personel} Px</div></div>', unsafe_allow_html=True)
+c2.markdown(f'<div class="kpi-card" style="border-top-color: #10B981;"><div class="kpi-title" style="color:#10B981;">🟢 Active On Duty</div><div class="kpi-number">{personel_aktif} Px</div></div>', unsafe_allow_html=True)
+c3.markdown(f'<div class="kpi-card" style="border-top-color: #F59E0B;"><div class="kpi-title" style="color:#F59E0B;">🟡 Standby Alert</div><div class="kpi-number">{personel_standby} Px</div></div>', unsafe_allow_html=True)
+c4.markdown(f'<div class="kpi-card" style="border-top-color: #3B82F6;"><div class="kpi-title" style="color:#3B82F6;">🔵 CGK Ready Resource</div><div class="kpi-number">{jumlah_di_cgk} Px</div></div>', unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# 6. LAYOUT UTAMA (Menyeimbangkan ruang kosong Kiri vs Kanan)
+col_left, col_right = st.columns([5, 4])
+
+with col_left:
+    st.markdown("<div class='section-header'>🗺️ Live Tactical Spatial Distribution</div>", unsafe_allow_html=True)
+    st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
+    
+    m = folium.Map(location=[-2.5, 118.0], zoom_start=5, tiles="OpenStreetMap")
+    
+    for lok, koordinat in DOKUMEN_KOORDINAT.items():
+        sub_df = df_pekerja[df_pekerja['Lokasi'].astype(str).str.strip() == lok]
+        if not sub_df.empty:
+            total_di_lokasi = len(sub_df)
+            warna_pin = "red" if lok == "CGK" else ("green" if any(sub_df['Status'].astype(str).str.strip() == 'Active') else "orange")
+            
+            popup_html = f"""
+            <div style='font-family: "Montserrat", sans-serif; color: #1e293b; min-width:240px;'>
+                <h4 style='margin:0 0 5px 0; color:#1e3a8a; font-weight:800;'>Station Hub: {lok}</h4>
+                <p style='margin:0 0 8px 0; font-size:12px;'>Total Resource: <b>{total_di_lokasi} Personel</b></p>
+                <table style='width:100%; font-size:11px; border-collapse: collapse;'>
+                    <tr style='background-color:#f1f5f9; text-align:left;'>
+                        <th style='padding:4px; font-weight:700;'>Nama</th>
+                        <th style='padding:4px; font-weight:700;'>Kualifikasi</th>
+                    </tr>
+            """
+            for _, row in sub_df.iterrows():
+                popup_html += f"<tr><td style='padding:4px; border-bottom:1px solid #e2e8f0;'>{row['Nama']}</td><td style='padding:4px; border-bottom:1px solid #e2e8f0;'>{row['Kualifikasi']}</td></tr>"
+            popup_html += "</table></div>"
+            
+            folium.Marker(
+                location=koordinat,
+                popup=folium.Popup(popup_html, max_width=380),
+                tooltip=f"Hub {lok}: {total_di_lokasi} Personnel",
+                icon=folium.Icon(color=warna_pin, icon="info-sign")
+            ).add_to(m)
+            
+    st_folium(m, width="100%", height=450) # Disesuaikan height agar rata dengan panel kanan
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.markdown("<div class='section-header'>📋 Personnel Directory Ledger</div>", unsafe_allow_html=True)
+    st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
+    st.dataframe(df_pekerja, use_container_width=True, hide_index=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with col_right:
+    st.markdown("<div class='section-header'>📊 Advanced Analytics & Operations</div>", unsafe_allow_html=True)
+    
+    # Deretan Popover Interaktif
+    pop_col1, pop_col2 = st.columns(2)
+    with pop_col1:
+        with st.popover("⚙️ Status Telemetry Map", use_container_width=True):
+            st.markdown("<h4 style='color:#041226; font-size:14px; font-weight:800; margin:0;'>📊 Duty Distribution</h4>", unsafe_allow_html=True)
+            if not df_pekerja.empty:
+                st.bar_chart(df_pekerja['Status'].value_counts(), color="#107C41", height=200)
+                
+    with pop_col2:
+        with st.popover("✈️ Inspect Capabilities", use_container_width=True):
+            st.markdown("<h4 style='color:#041226; font-size:14px; font-weight:800; margin:0;'>🚀 Fleet Skillset</h4>", unsafe_allow_html=True)
+            if not df_pekerja.empty:
+                st.bar_chart(df_pekerja['Kualifikasi'].value_counts().head(5), color="#F59E0B", height=200)
+
+    # Menambal ruang kosong dengan Hub Resource Breakdown
+    st.markdown('<div class="floating-panel" style="margin-top: 15px;">', unsafe_allow_html=True)
+    st.markdown("<h4 style='color:#041226; font-size:14px; font-weight:800; margin:0 0 15px 0;'>📈 Hub Resource Strength Breakdown</h4>", unsafe_allow_html=True)
+    if not df_pekerja.empty:
+        st.bar_chart(df_pekerja['Lokasi'].value_counts(), color="#005C97", height=250)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # TAMBAHAN BARU: Menambal bagian kosong paling bawah dengan Log/Resource Tracking
+    st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
+    st.markdown("<h4 style='color:#041226; font-size:14px; font-weight:800; margin:0 0 15px 0;'>⚡ Network Resource Utilization</h4>", unsafe_allow_html=True)
+    
+    # Kalkulasi Progress Bar
+    utilization_rate = int((personel_aktif / total_personel) * 100) if total_personel > 0 else 0
+    st.markdown(f"""
+        <div style="margin-bottom: 5px; font-size: 13px; font-weight: 600; color: #334155;">Active Deployment Load ({utilization_rate}%)</div>
+        <div style="width: 100%; background-color: #E2E8F0; border-radius: 8px; height: 12px; margin-bottom: 20px;">
+            <div style="width: {utilization_rate}%; background-color: #10B981; border-radius: 8px; height: 12px;"></div>
         </div>
     """, unsafe_allow_html=True)
-
-    df_raw = fetch_manpower_data()
     
-    # --- PENCARIAN (SEARCH) ---
-    search_query = st.text_input("🔍 Global Directory Search (Name, Hub, or Qualification)", placeholder="Enter keyword to filter records...")
-    if search_query:
-        df_display = df_raw[df_raw.apply(lambda row: row.astype(str).str.contains(search_query, case=False).any(), axis=1)]
-    else:
-        df_display = df_raw
-
-    # --- KPI METRICS (Dengan warna harmonis yang berbeda tiap kartu) ---
-    t_px = len(df_display)
-    a_px = len(df_display[df_display['Status'].str.strip() == 'Active'])
-    s_px = len(df_display[df_display['Status'].str.strip() == 'Standby'])
-    hq_px = len(df_display[df_display['Lokasi'].str.strip() == 'CGK'])
-
-    c1, c2, c3, c4 = st.columns(4)
-    c1.markdown(f"<div class='metric-card' style='border-left-color: #64748B;'><div class='metric-title'>Total Capacity</div><div class='metric-value'>{t_px}</div></div>", unsafe_allow_html=True)
-    c2.markdown(f"<div class='metric-card' style='border-left-color: #10B981;'><div class='metric-title'>Active Duty</div><div class='metric-value'>{a_px}</div></div>", unsafe_allow_html=True)
-    c3.markdown(f"<div class='metric-card' style='border-left-color: #F59E0B;'><div class='metric-title'>Standby Alert</div><div class='metric-value'>{s_px}</div></div>", unsafe_allow_html=True)
-    c4.markdown(f"<div class='metric-card' style='border-left-color: #3B82F6;'><div class='metric-title'>CGK Hub Reserves</div><div class='metric-value'>{hq_px}</div></div>", unsafe_allow_html=True)
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # --- MAIN LAYOUT (MAP & DATA) ---
-    col_map, col_chart = st.columns([7, 3])
-    
-    with col_map:
-        st.markdown("<div class='section-header'>🗺️ Tactical Spatial Deployment</div>", unsafe_allow_html=True)
-        st.markdown("<div class='main-panel'>", unsafe_allow_html=True)
-        
-        # Peta Terang/Bersih (CartoDB Positron) yang cocok dengan tema terang
-        m = folium.Map(location=[-2.5, 118.0], zoom_start=5, tiles="CartoDB positron")
-        for station, coords in STATION_COORDINATES.items():
-            station_data = df_display[df_display['Lokasi'].str.strip() == station]
-            if not station_data.empty:
-                total_px = len(station_data)
-                color = "#3B82F6" if station == "CGK" else ("#10B981" if any(station_data['Status'].str.strip() == 'Active') else "#F59E0B")
-                
-                # Desain Popup/Tooltip yang rapi
-                html = f"""
-                <div style="font-family:'Inter',sans-serif; min-width:200px;">
-                    <div style="background:#0F172A; color:white; padding:8px; border-radius:4px 4px 0 0;">
-                        <b>HUB {station}</b> ({total_px} Pax)
-                    </div>
-                    <table style="width:100%; font-size:12px; background:white; color:#1E293B; border-collapse:collapse;">
-                """
-                for _, row in station_data.iterrows():
-                    html += f"<tr><td style='padding:4px; border-bottom:1px solid #E2E8F0;'>{row['Nama']}</td><td style='padding:4px; border-bottom:1px solid #E2E8F0; color:#64748B;'>{row['Kualifikasi']}</td></tr>"
-                html += "</table></div>"
-                
-                folium.CircleMarker(location=coords, radius=8, color=color, fill=True, fill_color=color, fill_opacity=0.9, tooltip=folium.Tooltip(html)).add_to(m)
-        
-        st_folium(m, width="100%", height=400, returned_objects=[])
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        st.markdown("<div class='section-header'>📋 Personnel Directory Ledger</div>", unsafe_allow_html=True)
-        st.dataframe(df_display, use_container_width=True, hide_index=True)
-
-    with col_chart:
-        st.markdown("<div class='section-header'>📊 Analytics Analytics</div>", unsafe_allow_html=True)
-        st.markdown("<div class='main-panel'>", unsafe_allow_html=True)
-        st.markdown("<span style='font-family: Poppins; font-weight: 600; color: #0F172A;'>Operational Status</span>", unsafe_allow_html=True)
-        if not df_display.empty:
-            st.bar_chart(df_display['Status'].value_counts(), color="#10B981", height=200)
-        
-        st.markdown("<span style='font-family: Poppins; font-weight: 600; color: #0F172A;'>Top Hub Distribution</span>", unsafe_allow_html=True)
-        if not df_display.empty:
-            st.bar_chart(df_display['Lokasi'].value_counts(), color="#3B82F6", height=250)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-if __name__ == "__main__":
-    main()
+    st.markdown("<h4 style='color:#041226; font-size:14px; font-weight:800; margin:20px 0 10px 0;'>📡 Live Activity Feed (Simulated)</h4>", unsafe_allow_html=True)
+    st.markdown(f"""
+        <div class="activity-item"><span class="activity-time">Just Now</span> User {st.session_state.username} accessed Tactical Command.</div>
+        <div class="activity-item"><span class="activity-time">2 mins ago</span> System telemetry synchronized with CGK Datacenter.</div>
+        <div class="activity-item"><span class="activity-time">15 mins ago</span> Standby alert updated for DPS Hub.</div>
+        <div class="activity-item" style="border:none;"><span class="activity-time">1 hour ago</span> Daily manpower allocation snapshot captured.</div>
+    """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
