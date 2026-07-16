@@ -215,24 +215,12 @@ st.markdown("""
             padding: 15px;
             box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05);
         }
-
-        /* Kotak Login Terpadu */
-        .login-box {
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 35px;
-            border-radius: 12px;
-            border-top: 6px solid #005C97;
-            box-shadow: 0 15px 35px rgba(4, 18, 38, 0.15);
-            border-left: 1px solid rgba(255, 255, 255, 0.7);
-            border-right: 1px solid rgba(255, 255, 255, 0.7);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.7);
-        }
     </style>
 """, unsafe_allow_html=True)
 
 
 # =====================================================================
-# 🔑 LOGIN PAGE CONTROLLER (Clean Layout)
+# 🔑 LOGIN PAGE CONTROLLER (Clean Layout - No Ghost Boxes)
 # =====================================================================
 if not st.session_state.logged_in:
     # Menggunakan kolom pembantu agar kotak login pas berada di tengah layar
@@ -252,36 +240,33 @@ if not st.session_state.logged_in:
             </div>
         """, unsafe_allow_html=True)
         
-        # Container Login terpadu
-        st.markdown('<div class="login-box">', unsafe_allow_html=True)
-        
-        # 🏆 Menambahkan Logo GMF (PNG) di atas formulir login secara lokal
-        try:
-            st.image("gmf aeroasia logo new blue.png", use_container_width=True)
-            st.markdown("<br>", unsafe_allow_html=True)
-        except Exception as e:
-            st.markdown("<h3 style='color:#041226; font-weight:800; margin-top:0;'>🔒 Secure Gateway Login</h3>", unsafe_allow_html=True)
-            st.sidebar.warning("⚠️ Letakkan file 'gmf aeroasia logo new blue.png' di repositori GitHub Anda.")
+        # --- BLOK FORM LOGIN (Menggunakan Container Streamlit Bersih) ---
+        with st.container():
+            # 🏆 Menambahkan Logo GMF (PNG) langsung di atas formulir login
+            try:
+                st.image("gmf aeroasia logo new blue.png", use_container_width=True)
+                st.markdown("<br>", unsafe_allow_html=True)
+            except Exception as e:
+                st.markdown("<h3 style='color:#041226; font-weight:800; margin-top:0;'>🔒 Secure Gateway Login</h3>", unsafe_allow_html=True)
+                st.sidebar.warning("⚠️ Letakkan file 'gmf aeroasia logo new blue.png' di repositori GitHub Anda.")
 
-        input_user = st.text_input("Username", placeholder="Masukkan ID personel Anda...", key="login_user")
-        input_pass = st.text_input("Password", type="password", placeholder="••••••••", key="login_pass")
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        btn_login = st.button("AUTHENTICATE SYSTEM 🔓", use_container_width=True)
-        
-        if btn_login:
-            username_clean = input_user.strip()
-            if username_clean in USER_DATABASE and USER_DATABASE[username_clean]["password"] == input_pass:
-                st.session_state.logged_in = True
-                st.session_state.username = username_clean
-                st.session_state.role = USER_DATABASE[username_clean]["role"]
-                st.toast("Akses berhasil! Menyiapkan dashboard...", icon="✅")
-                st.rerun()
-            else:
-                st.error("🚨 Username atau password salah. Pastikan kredensial Anda valid.")
+            input_user = st.text_input("Username", placeholder="Masukkan ID personel Anda...", key="login_user")
+            input_pass = st.text_input("Password", type="password", placeholder="••••••••", key="login_pass")
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            btn_login = st.button("AUTHENTICATE SYSTEM 🔓", use_container_width=True)
+            
+            if btn_login:
+                username_clean = input_user.strip()
+                if username_clean in USER_DATABASE and USER_DATABASE[username_clean]["password"] == input_pass:
+                    st.session_state.logged_in = True
+                    st.session_state.username = username_clean
+                    st.session_state.role = USER_DATABASE[username_clean]["role"]
+                    st.toast("Akses berhasil! Menyiapkan dashboard...", icon="✅")
+                    st.rerun()
+                else:
+                    st.error("🚨 Username atau password salah. Pastikan kredensial Anda valid.")
                 
-        st.markdown('</div>', unsafe_allow_html=True)
-        
     st.stop()  # Blokir halaman utama jika belum sukses login
 
 
