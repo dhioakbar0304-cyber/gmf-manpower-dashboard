@@ -13,7 +13,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 # 1. KONFIGURASI HALAMAN UTAMA
 st.set_page_config(
     page_title="GMF AeroAsia - Manpower Allocation",
-    page_icon="gmf aeroasia logo new blue.png", 
+    page_icon="pngegg.png", 
     layout="wide",
     initial_sidebar_state="expanded"
 )
