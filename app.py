@@ -210,7 +210,7 @@ if st.sidebar.button("🔴 SECURE LOGOUT", use_container_width=True):
     st.session_state.logged_in = False
     st.rerun()
 
-# 🏢 MAIN BANNER (TANPA LOGO & TEKS BARU)
+# 🏢 MAIN BANNER
 st.markdown("""
     <div style="padding-top: 5px;">
         <h2 style="color: #041226; font-weight: 900; margin: 0; letter-spacing: 1px;">MANPOWER ALLOCATION DASHBOARD</h2>
@@ -250,7 +250,9 @@ with col_left:
     st.markdown("<div class='section-header'>🗺️ Live Tactical Spatial Distribution</div>", unsafe_allow_html=True)
     st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
     
-    m = folium.Map(location=[-2.5, 118.0], zoom_start=5, tiles="OpenStreetMap")
+    # PERUBAHAN MAP DI SINI (Ganti tileset ke CartoDB positron dan set center koordinat Indonesia)
+    m = folium.Map(location=[-0.7893, 113.9213], zoom_start=5, tiles="CartoDB positron")
+    
     for lok, koordinat in DOKUMEN_KOORDINAT.items():
         sub_df = df_pekerja[df_pekerja['Lokasi'].astype(str).str.strip() == lok]
         if not sub_df.empty:
