@@ -10,7 +10,7 @@ from datetime import datetime
 # Bypass verifikasi SSL Certificate
 ssl._create_default_https_context = ssl._create_unverified_context
 
-# 1. KONFIGURASI HALAMAN UTAMA (PAGE ICON SUDAH GANTI JADI LOGO GMF)
+# 1. KONFIGURASI HALAMAN UTAMA
 st.set_page_config(
     page_title="GMF AeroAsia - Manpower Allocation",
     page_icon="gmf aeroasia logo new blue.png", 
@@ -210,21 +210,14 @@ if st.sidebar.button("🔴 SECURE LOGOUT", use_container_width=True):
     st.session_state.logged_in = False
     st.rerun()
 
-# 🏢 MAIN BANNER (SUDAH DIPERBAIKI: HAPUS DOBEL TEKS & HAPUS KOTAK HITAM)
-ban_col1, ban_col2 = st.columns([1.5, 5])
-with ban_col1:
-    if os.path.exists(LOGO_SOURCE):
-        st.image(LOGO_SOURCE, use_container_width=True)
-    else:
-        st.markdown('<div style="font-size: 40px; text-align: center;">✈️</div>', unsafe_allow_html=True)
-with ban_col2:
-    st.markdown("""
-        <div style="padding-top: 15px;">
-            <h2 style="color: #041226; font-weight: 900; margin: 0; letter-spacing: 1px;">TACTICAL OUTSTATION COMMAND CENTER</h2>
-            <p style="color: #005C97; font-size: 14px; font-weight: 700; letter-spacing: 3px; margin-top: 5px; text-transform: uppercase;">Real-Time Manpower Telemetry</p>
-        </div>
-    """, unsafe_allow_html=True)
-st.markdown('<hr style="border: 2px solid #005C97; margin-top: 0px; margin-bottom: 25px; border-radius: 5px;">', unsafe_allow_html=True)
+# 🏢 MAIN BANNER (TANPA LOGO & TEKS BARU)
+st.markdown("""
+    <div style="padding-top: 5px;">
+        <h2 style="color: #041226; font-weight: 900; margin: 0; letter-spacing: 1px;">MANPOWER ALLOCATION DASHBOARD</h2>
+        <p style="color: #005C97; font-size: 14px; font-weight: 700; letter-spacing: 3px; margin-top: 5px; text-transform: uppercase;">Outstation Personnel Monitoring System</p>
+    </div>
+""", unsafe_allow_html=True)
+st.markdown('<hr style="border: 2px solid #005C97; margin-top: 15px; margin-bottom: 25px; border-radius: 5px;">', unsafe_allow_html=True)
 
 # SEARCH CONTAINER
 search_query = st.text_input("🔎 Pencarian Berdasarkan Nama / Kualifikasi / Stasiun Hub:", placeholder="Ketik nama personel atau kode stasiun di sini...")
