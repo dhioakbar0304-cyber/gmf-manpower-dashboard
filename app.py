@@ -212,15 +212,16 @@ st.markdown("""
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 12px;
-            padding: 15px;
+            padding: 20px;
             box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05);
+            margin-bottom: 20px;
         }
     </style>
 """, unsafe_allow_html=True)
 
 
 # =====================================================================
-# 🔑 LOGIN PAGE CONTROLLER (Clean Layout - No Ghost Boxes)
+# 🔑 LOGIN PAGE CONTROLLER (Clean Layout)
 # =====================================================================
 if not st.session_state.logged_in:
     col_space_l, col_login_core, col_space_r = st.columns([1, 1.2, 1])
@@ -441,7 +442,7 @@ with col_left:
     st_folium(m, width="100%", height=520)
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Pindahkan Directory Ledger ke bagian bawah peta agar ruang vertikal lebih seimbang
+    # Directory Ledger di bagian bawah peta
     st.markdown("<div class='section-header'>📋 Personnel Directory Ledger</div>", unsafe_allow_html=True)
     st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
     st.dataframe(
@@ -460,40 +461,39 @@ with col_left:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_right:
-    # --- CHART 1: STATION DISTRIBUTION (Bar Chart) ---
+    # --- CHART 1: STATION DISTRIBUTION ---
     st.markdown("<div class='section-header'>📊 Hub Resource Strength</div>", unsafe_allow_html=True)
     st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
     if not df_pekerja.empty:
         distribusi_lokasi = df_pekerja['Lokasi'].value_counts()
-        st.bar_chart(distribusi_lokasi, color="#005C97")
+        st.bar_chart(distribusi_lokasi, color="#005C97", height=240)
     else:
         st.caption("Tidak ada data untuk dibuat grafik.")
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Baris baru untuk menampung Chart 2 dan Chart 3 berdampingan
-    st.markdown("<div class='section-header'>📈 Advanced Manpower Analytics</div>", unsafe_allow_html=True)
+    # --- SECTION ADVANCED MANPOWER ANALYTICS ---
+    st.markdown("<div class='section-header'>📋 Advanced Manpower Analytics</div>", unsafe_allow_html=True)
     
     sub_col1, sub_col2 = st.columns(2)
     
     with sub_col1:
-        # --- CHART 2: STATUS OPERATION (Pie/Donut Simulasi via Streamlit Native) ---
-        st.markdown('<div class="floating-panel" style="height: 260px;">', unsafe_allow_html=True)
-        st.markdown("<p style='font-size:12px; font-weight:700; color:#041226; margin:0 0 10px 0;'>⏱️ DUTY STATUS SHARE</p>", unsafe_allow_html=True)
+        # --- CHART 2: STATUS OPERATION ---
+        st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
+        st.markdown("<p style='font-size:11px; font-weight:800; color:#556980; margin:0 0 10px 0; letter-spacing:1px;'>⏱️ DUTY STATUS SHARE</p>", unsafe_allow_html=True)
         if not df_pekerja.empty:
             distribusi_status = df_pekerja['Status'].value_counts()
-            # Render visual bar kecil vertikal sebagai representasi perbandingan status
-            st.bar_chart(distribusi_status, color="#107C41", height=180)
+            st.bar_chart(distribusi_status, color="#107C41", height=220)
         else:
             st.caption("No status data available.")
         st.markdown('</div>', unsafe_allow_html=True)
         
     with sub_col2:
-        # --- CHART 3: TOP AIRCRAFT QUALIFICATIONS (Horizontal Representation) ---
-        st.markdown('<div class="floating-panel" style="height: 260px;">', unsafe_allow_html=True)
-        st.markdown("<p style='font-size:12px; font-weight:700; color:#041226; margin:0 0 10px 0;'>✈️ AIRCRAFT TYPE CAPABILITY</p>", unsafe_allow_html=True)
+        # --- CHART 3: TOP AIRCRAFT QUALIFICATIONS ---
+        st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
+        st.markdown("<p style='font-size:11px; font-weight:800; color:#556980; margin:0 0 10px 0; letter-spacing:1px;'>✈️ AIRCRAFT TYPE CAPABILITY</p>", unsafe_allow_html=True)
         if not df_pekerja.empty:
             distribusi_kualifikasi = df_pekerja['Kualifikasi'].value_counts().head(5)
-            st.bar_chart(distribusi_kualifikasi, color="#F59E0B", height=180)
+            st.bar_chart(distribusi_kualifikasi, color="#F59E0B", height=220)
         else:
             st.caption("No capability data available.")
         st.markdown('</div>', unsafe_allow_html=True)
