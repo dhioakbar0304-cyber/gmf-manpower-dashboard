@@ -3,459 +3,405 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 import ssl
+import logging
+from typing import Dict, List, Tuple
 
-# Bypass SSL Verification for macOS environments
+# ==============================================================================
+# SYSTEM CONFIGURATION & LOGGING
+# ==============================================================================
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
+
+# Bypass SSL Verification for specific network environments (macOS/Corporate Proxy)
 ssl._create_default_https_context = ssl._create_unverified_context
 
-# 1. CORE PAGE CONFIGURATION
-st.set_page_config(
-    page_title="GMF AeroAsia - Manpower Allocation Dashboard",
-    page_icon="https://www.garuda-indonesia.com/favicon.ico", 
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# Constants
+SHEET_EXPORT_URL = "https://docs.google.com/spreadsheets/d/1IPuSFsMxZCKQBcL7NBoE-JIsQkG7-DePII0I2b8x9Vk/export?format=csv&gid=827445294"
+SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1IPuSFsMxZCKQBcL7NBoE-JIsQkG7-DePII0I2b8x9Vk/edit"
 
-# 🔑 INITIALIZE SESSION STATE FOR AUTHENTICATION
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-if "username" not in st.session_state:
-    st.session_state.username = ""
-if "role" not in st.session_state:
-    st.session_state.role = ""
-
-# 🎯 SECURE USER DATABASE
-USER_DATABASE = {
-    "dhioakbar0304": {"password": "gmfsecure01", "role": "PPC Planning & Control"},
-    "supervisor_gmf": {"password": "gmfsecure02", "role": "Maintenance Supervisor"}
+STATION_COORDINATES: Dict[str, Tuple[float, float]] = {
+    "CGK": (-6.1256, 106.6559), "KNO": (3.6422, 98.8853),
+    "DPS": (-8.7481, 115.1674), "SUB": (-7.3798, 112.7873),
+    "UPG": (-5.0616, 119.5523), "DJJ": (-2.5783, 140.5167),
+    "BTH": (1.1211, 104.1182), "BPN": (-1.2683, 116.8944)
 }
 
-# 🎨 PREMIUM CSS: INTER UI TYPOGRAPHY & APPLE SPRING ANIMATION ARCHITECTURE
-st.markdown("""
-    <style>
-        /* Import Apple-preferred web typography (Inter) */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-        
-        html, body, [class*="css"] {
-            font-family: 'Inter', sans-serif !important;
-        }
+# ==============================================================================
+# DATA MANAGEMENT LAYER (CACHED)
+# ==============================================================================
+@st.cache_data(ttl=300, show_spinner=False)  # Cache data for 5 minutes
+def fetch_manpower_data() -> pd.DataFrame:
+    """Fetches and caches live manpower data from Google Sheets."""
+    try:
+        df = pd.read_csv(SHEET_EXPORT_URL)
+        logger.info(f"Successfully loaded {len(df)} records from database.")
+        return df
+    except Exception as e:
+        logger.error(f"Database connection failed: {e}")
+        st.toast("⚠️ Operating on local fallback data due to network error.", icon="📡")
+        # Enterprise Fallback Data
+        return pd.DataFrame([
+            {"ID": 551001, "Nama": "System Admin", "Kualifikasi": "A330/B777 Expert", "Lokasi": "CGK", "Status": "Active"}
+        ])
 
-        /* GLOBAL CANVAS BACKGROUND */
-        .stApp {
-            background-image: linear-gradient(rgba(244, 246, 249, 0.94), rgba(244, 246, 249, 0.94)), 
-                              url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1920&q=80');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }
-        
-        /* 🍏 PREMIUM INSPIRED LEFT SIDEBAR */
-        section[data-testid="stSidebar"] {
-            background-color: #0B132B !important; 
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        div[data-testid="stSidebarUserContent"] p,
-        div[data-testid="stSidebarUserContent"] span,
-        div[data-testid="stSidebarUserContent"] h3,
-        div[data-testid="stSidebarUserContent"] label {
-            font-family: 'Inter', sans-serif !important;
-            color: #E2E8F0 !important;
-            font-weight: 500;
-        }
-        
-        div[data-testid="stSidebarUserContent"] code {
-            background-color: rgba(56, 189, 248, 0.1) !important;
-            color: #38BDF8 !important;
-            font-size: 13px !important;
-            font-weight: 600 !important;
-            padding: 4px 8px !important;
-            border-radius: 6px;
-        }
-        
-        /* BUTTON ACTIONS */
-        div.stButton > button {
-            background-color: #1E3A8A !important;
-            color: #FFFFFF !important;
-            font-family: 'Inter', sans-serif !important;
-            border-radius: 10px !important;
-            border: 1px solid #3B82F6 !important;
-            font-weight: 600 !important;
-            padding: 12px !important;
-            letter-spacing: 0.3px;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        div.stButton > button:hover {
-            background-color: #172554 !important;
-            transform: translateY(-1px);
-            box-shadow: 0px 4px 12px rgba(59, 130, 246, 0.3);
-        }
-        
-        .sheets-btn {
-            display: block;
-            text-align: center;
-            background-color: #16A34A !important;
-            color: #FFFFFF !important;
-            padding: 12px;
-            font-family: 'Inter', sans-serif !important;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 13px;
-            text-decoration: none;
-            margin-top: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #22C55E;
-            transition: all 0.2s ease;
-        }
-        .sheets-btn:hover {
-            background-color: #15803D !important;
-            color: #FFFFFF !important;
-            text-decoration: none;
-            box-shadow: 0px 4px 12px rgba(22, 163, 74, 0.3);
-        }
-        
-        /* HEAD BANNER */
-        .gmf-banner {
-            background: linear-gradient(135deg, #0B132B 0%, #1C2541 100%);
-            padding: 40px 20px;
-            border-radius: 16px;
-            color: #FFFFFF !important;
-            text-align: center;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 25px rgba(11, 19, 43, 0.15);
-        }
-        
-        .gmf-banner h1 {
-            color: #FFFFFF !important;
-            font-size: 38px !important;
-            font-weight: 800 !important;
-            letter-spacing: 1px;
-            margin: 0 !important;
-        }
-        
-        .gmf-banner p {
-            color: #38BDF8 !important;
-            font-size: 12px !important;
-            font-weight: 700;
-            letter-spacing: 4px;
-            margin-top: 12px !important;
-            text-transform: uppercase;
-        }
-
-        div[data-testid="stTextInput"] input {
-            font-family: 'Inter', sans-serif !important;
-            border-radius: 10px !important;
-            border: 1px solid #CBD5E1 !important;
-            padding: 12px !important;
-            font-size: 15px !important;
-            background-color: #FFFFFF !important;
-        }
-
-        /* KPI CARDS */
-        .kpi-card {
-            background-color: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
-            border-top: 4px solid #1E3A8A;
-        }
-        
-        .kpi-title {
-            color: #64748B;
-            font-size: 12px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        
-        .kpi-number {
-            font-size: 32px;
-            font-weight: 800;
-            color: #0F172A;
-            margin: 0;
-        }
-
-        .section-header {
-            font-size: 16px;
-            font-weight: 700;
-            color: #0F172A;
-            margin-top: 32px;
-            margin-bottom: 16px;
-            border-left: 4px solid #1E3A8A;
-            padding-left: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .floating-panel {
-            background-color: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
-            margin-bottom: 24px;
-        }
-
-        /* =====================================================================
-           🍏 NATIVE APPLE POPOVER TRANSITION ARCHITECTURE
-           ===================================================================== */
-        
-        /* Popover Trigger Buttons */
-        div[data-testid="stPopover"] > button {
-            background-color: rgba(255, 255, 255, 0.8) !important;
-            backdrop-filter: blur(12px) !important;
-            color: #0F172A !important;
-            border: 1px solid rgba(15, 23, 42, 0.12) !important;
-            font-weight: 600 !important;
-            border-radius: 12px !important;
-            padding: 12px 20px !important;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        }
-        
-        div[data-testid="stPopover"] > button:hover {
-            background-color: #FFFFFF !important;
-            border-color: #1E3A8A !important;
-        }
-
-        /* Apple Spring Popover Frame Container */
-        div[data-testid="stPopoverBody"] {
-            background-color: rgba(255, 255, 255, 0.95) !important;
-            backdrop-filter: blur(30px) !important;
-            border-radius: 20px !important;
-            border: 1px solid rgba(255, 255, 255, 0.8) !important;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
-            padding: 20px !important;
+# ==============================================================================
+# UI INJECTION (ENTERPRISE CSS)
+# ==============================================================================
+def inject_enterprise_css() -> None:
+    """Injects refined, professional-grade CSS typography and structural styling."""
+    st.markdown("""
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
             
-            /* Native Apple Spring Animation Matrix */
-            animation: appleSpringOpen 0.45s cubic-bezier(0.25, 1.1, 0.4, 1) forwards !important;
-            transform-origin: top center !important;
-        }
-
-        @keyframes appleSpringOpen {
-            0% {
-                opacity: 0;
-                transform: scale(0.93) translateY(-6px);
+            /* Global Typography */
+            html, body, [class*="css"], .stMarkdown, .stText {
+                font-family: 'Plus Jakarta Sans', sans-serif !important;
             }
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
+            
+            /* Deep Corporate Background */
+            .stApp {
+                background-color: #0B1120 !important;
+                background-image: radial-gradient(circle at 50% 0%, #1E293B 0%, #0B1120 70%);
+                color: #F8FAFC !important;
             }
-        }
-    </style>
-""", unsafe_allow_html=True)
 
+            /* Professional Sidebar Refinement */
+            section[data-testid="stSidebar"] {
+                background-color: #0F172A !important;
+                border-right: 1px solid #1E293B !important;
+            }
+            
+            /* Enhanced Sidebar Text */
+            div[data-testid="stSidebarUserContent"] p, div[data-testid="stSidebarUserContent"] h3 {
+                color: #CBD5E1 !important;
+                font-weight: 500;
+            }
+            
+            /* Action Buttons (Standardized) */
+            div.stButton > button {
+                background-color: #2563EB !important;
+                color: #FFFFFF !important;
+                border: 1px solid #3B82F6 !important;
+                border-radius: 6px !important;
+                font-weight: 600 !important;
+                padding: 0.5rem 1rem !important;
+                transition: all 0.2s ease-in-out;
+            }
+            div.stButton > button:hover {
+                background-color: #1D4ED8 !important;
+                border-color: #60A5FA !important;
+                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+            }
 
-# =====================================================================
-# 🔑 GATEWAY CONTROLLER (ENGLISH)
-# =====================================================================
-if not st.session_state.logged_in:
-    col_space_l, col_login_core, col_space_r = st.columns([1, 1.1, 1])
-    
-    with col_login_core:
-        st.markdown("<br><br><br>", unsafe_allow_html=True)
+            /* External Link Button */
+            .action-link-btn {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background-color: #059669;
+                color: white !important;
+                padding: 0.6rem 1rem;
+                border-radius: 6px;
+                font-weight: 600;
+                font-size: 0.875rem;
+                text-decoration: none;
+                transition: 0.2s ease;
+                border: 1px solid #10B981;
+                margin-bottom: 1rem;
+            }
+            .action-link-btn:hover {
+                background-color: #047857;
+                box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+            }
+
+            /* Executive Banner */
+            .exec-banner {
+                background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+                border: 1px solid #334155;
+                padding: 2rem;
+                border-radius: 12px;
+                text-align: center;
+                margin-bottom: 2rem;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            }
+            .exec-banner h1 {
+                color: #F8FAFC !important;
+                font-size: 2.2rem !important;
+                font-weight: 800 !important;
+                margin: 0;
+            }
+            .exec-banner p {
+                color: #38BDF8 !important;
+                font-size: 0.85rem !important;
+                font-weight: 700;
+                letter-spacing: 0.2em;
+                margin-top: 0.5rem !important;
+                text-transform: uppercase;
+            }
+
+            /* High-End KPI Cards */
+            .metric-card {
+                background-color: #1E293B;
+                border: 1px solid #334155;
+                padding: 1.5rem;
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .metric-title {
+                color: #94A3B8;
+                font-size: 0.75rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-bottom: 0.5rem;
+            }
+            .metric-value {
+                font-size: 2rem;
+                font-weight: 800;
+                color: #F8FAFC;
+                line-height: 1;
+            }
+
+            /* Structural Sections */
+            .panel-container {
+                background-color: #0F172A;
+                border: 1px solid #1E293B;
+                border-radius: 10px;
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            .section-header {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: #E2E8F0;
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            
+            /* Override Streamlit Inputs for Dark Theme */
+            div[data-testid="stTextInput"] input {
+                background-color: #1E293B !important;
+                color: #F8FAFC !important;
+                border: 1px solid #334155 !important;
+                border-radius: 6px !important;
+            }
+            div[data-testid="stTextInput"] input:focus {
+                border-color: #38BDF8 !important;
+                box-shadow: 0 0 0 1px #38BDF8 !important;
+            }
+            
+            /* Clean Popover Buttons */
+            div[data-testid="stPopover"] > button {
+                background-color: #1E293B !important;
+                border: 1px solid #334155 !important;
+                color: #E2E8F0 !important;
+            }
+            div[data-testid="stPopoverBody"] {
+                background-color: #0F172A !important;
+                border: 1px solid #334155 !important;
+                border-radius: 12px !important;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
+# ==============================================================================
+# AUTHENTICATION MODULE
+# ==============================================================================
+def render_authentication_gateway() -> None:
+    """Renders the secure login interface."""
+    _, col, _ = st.columns([1, 1.2, 1])
+    with col:
+        st.markdown("<br><br>", unsafe_allow_html=True)
         st.markdown("""
-            <div style="text-align: center; margin-bottom: 25px;">
-                <h2 style="color: #0F172A; font-weight: 800; letter-spacing: 0.5px; font-size: 24px; margin:0;">
-                    TACTICAL COMMAND PORTAL
-                </h2>
-                <p style="color: #1E3A8A; font-weight: 700; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-top:6px;">
-                    GMF AeroAsia - Outstation Division
-                </p>
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2 style="color: #F8FAFC; font-weight: 800; font-size: 1.8rem; margin:0;">SYSTEM GATEWAY</h2>
+                <p style="color: #38BDF8; font-weight: 600; font-size: 0.75rem; letter-spacing: 0.2em; margin-top:0.2rem;">GMF TACTICAL COMMAND</p>
             </div>
         """, unsafe_allow_html=True)
         
         with st.container():
-            try:
-                st.image("gmf aeroasia logo new blue.png", use_container_width=True)
-                st.markdown("<br>", unsafe_allow_html=True)
-            except:
-                pass
-
-            input_user = st.text_input("Username", placeholder="Enter your personnel ID...", key="login_user")
-            input_pass = st.text_input("Password", type="password", placeholder="••••••••", key="login_pass")
+            username = st.text_input("Operator ID", key="auth_user")
+            password = st.text_input("Access Credential", type="password", key="auth_pass")
             
-            st.markdown("<br>", unsafe_allow_html=True)
-            btn_login = st.button("AUTHENTICATE SYSTEM 🔓", use_container_width=True)
-            
-            if btn_login:
-                username_clean = input_user.strip()
-                if username_clean in USER_DATABASE and USER_DATABASE[username_clean]["password"] == input_pass:
+            if st.button("INITIALIZE SESSION", use_container_width=True):
+                # In production, use hashed passwords or SSO. Mocking logic here.
+                if username == "admin" and password == "admin123":
                     st.session_state.logged_in = True
-                    st.session_state.username = username_clean
-                    st.session_state.role = USER_DATABASE[username_clean]["role"]
+                    st.session_state.username = username.upper()
+                    st.session_state.role = "Command Level Administrator"
                     st.rerun()
                 else:
-                    st.error("🚨 Invalid username or password configuration.")
-                
+                    st.error("Authentication Failed: Invalid credentials.")
     st.stop()
 
-
-# =====================================================================
-# 💻 SYSTEM ENTERPRISE CORE
-# =====================================================================
-
-COORDINATE_REGISTRY = {
-    "CGK": [-6.1256, 106.6559], "KNO": [3.6422, 98.8853],
-    "DPS": [-8.7481, 115.1674], "SUB": [-7.3798, 112.7873],
-    "UPG": [-5.0616, 119.5523], "DJJ": [-2.5783, 140.5167],
-    "BTH": [1.1211, 104.1182], "BPN": [-1.2683, 116.8944]
-}
-
-LINK_EDIT_GOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1IPuSFsMxZCKQBcL7NBoE-JIsQkG7-DePII0I2b8x9Vk/edit"
-LINK_EXPORT_GOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1IPuSFsMxZCKQBcL7NBoE-JIsQkG7-DePII0I2b8x9Vk/export?format=csv&gid=827445294"
-
-def load_live_google_sheets():
-    try:
-        return pd.read_csv(LINK_EXPORT_GOOGLE_SHEETS)
-    except Exception as e:
-        return pd.DataFrame([{"ID": 551001, "Nama": "Ahmad", "Kualifikasi": "B737 Expert", "Lokasi": "DPS", "Status": "Active", "PPC Pengirim": "Backup Layer"}])
-
-df_raw = load_live_google_sheets()
-
-# SIDEBAR FRAMEWORK
-st.sidebar.markdown("<br>", unsafe_allow_html=True)
-try:
-    st.sidebar.image("gmf aeroasia logo new blue.png", use_container_width=True)
-except:
-    pass
-
-st.sidebar.markdown("<br>", unsafe_allow_html=True)
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 📊 ENGINE CONTROL")
-st.sidebar.markdown(f'<a href="{LINK_EDIT_GOOGLE_SHEETS}" target="_blank" class="sheets-btn">🟢 EDIT LIVE MASTER SHEET</a>', unsafe_allow_html=True)
-
-if st.sidebar.button("🔄 RE-SYNC DATASETS", use_container_width=True):
-    st.cache_data.clear()
-    st.rerun()
-
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 👤 SYSTEM USER METRICS")
-st.sidebar.markdown(f"""
-<div style="line-height: 2.2; font-size: 13px;">
-    <p style="margin: 0; color: #94A3B8;">Operator Station:</p>
-    <p style="margin: 0 0 12px 0; color: #38BDF8; font-weight: 700; font-size:14px;">{st.session_state.username}</p>
-    <p style="margin: 0; color: #94A3B8;">Privilege Matrix:</p>
-    <p style="margin: 0; color: #38BDF8; font-weight: 700; font-size:14px;">{st.session_state.role}</p>
-</div>
-""", unsafe_allow_html=True)
-
-st.sidebar.markdown("<br><br>", unsafe_allow_html=True)
-if st.sidebar.button("🔴 TERMINATE SESSION", use_container_width=True):
-    st.session_state.logged_in = False
-    st.rerun()
-
-# COMMAND CENTER BANNER
-st.markdown('<div class="gmf-banner"><h1>GMF AEROASIA</h1><p>Tactical Outstation Manpower Command Center</p></div>', unsafe_allow_html=True)
-
-# INTELLIGENT SEARCH
-st.markdown("<div class='section-header'>🔎 Tactical Resource Search Engine</div>", unsafe_allow_html=True)
-search_query = st.text_input("Query filter directory by Name, Qualification, or Station Hub:", "")
-
-if search_query:
-    df_filtered = df_raw[
-        df_raw['Nama'].str.contains(search_query, case=False, na=False) |
-        df_raw['Kualifikasi'].str.contains(search_query, case=False, na=False) |
-        df_raw['Lokasi'].str.contains(search_query, case=False, na=False)
-    ]
-else:
-    df_filtered = df_raw
-
-# EXECUTIVE TELEMETRY METRICS
-total_px = len(df_filtered)
-active_px = len(df_filtered[df_filtered['Status'].str.strip() == 'Active'])
-standby_px = len(df_filtered[df_filtered['Status'].str.strip() == 'Standby'])
-cgk_px = len(df_filtered[df_filtered['Lokasi'].str.strip() == 'CGK'])
-
-c1, c2, c3, c4 = st.columns(4)
-with c1:
-    st.markdown(f'<div class="kpi-card"><div class="kpi-title">📁 Fleet Capacity</div><div class="kpi-number">{total_px} Px</div></div>', unsafe_allow_html=True)
-with c2:
-    st.markdown(f'<div class="kpi-card" style="border-top-color: #16A34A;"><div class="kpi-title" style="color:#16A34A;">🟢 Active Deployment</div><div class="kpi-number">{active_px} Px</div></div>', unsafe_allow_html=True)
-with c3:
-    st.markdown(f'<div class="kpi-card" style="border-top-color: #D97706;"><div class="kpi-title" style="color:#D97706;">🟡 Standby Status</div><div class="kpi-number">{standby_px} Px</div></div>', unsafe_allow_html=True)
-with c4:
-    st.markdown(f'<div class="kpi-card" style="border-top-color: #2563EB;"><div class="kpi-title" style="color:#2563EB;">🔵 Hub CGK Force</div><div class="kpi-number">{cgk_px} Px</div></div>', unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# MONITORING MATRIX SPLIT
-col_left, col_right = st.columns([4, 3])
-
-with col_left:
-    st.markdown("<div class='section-header'>🗺️ Live Tactical Spatial Distribution</div>", unsafe_allow_html=True)
-    st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
-    
-    # Initialize Core Map Canvas
-    m = folium.Map(location=[-2.5, 118.0], zoom_start=5, tiles="OpenStreetMap")
-    
-    # RENDER SPATIAL MARKERS AND DETAILED DATA POPUPS
-    for station, coords in COORDINATE_REGISTRY.items():
-        sub_df = df_filtered[df_filtered['Lokasi'].str.strip() == station]
-        if not sub_df.empty:
-            station_total = len(sub_df)
-            marker_color = "red" if station == "CGK" else ("green" if any(sub_df['Status'].str.strip() == 'Active') else "orange")
+# ==============================================================================
+# DASHBOARD RENDERING LOGIC
+# ==============================================================================
+def render_sidebar() -> None:
+    """Renders the side navigation and control panel."""
+    with st.sidebar:
+        st.markdown("<h3 style='color:#F8FAFC; margin-bottom: 1.5rem;'>⚙️ Control Center</h3>", unsafe_allow_html=True)
+        
+        st.markdown(f"""
+            <a href="{SHEET_EDIT_URL}" target="_blank" class="action-link-btn">
+                <span>📝 Edit Master Database</span>
+            </a>
+        """, unsafe_allow_html=True)
+        
+        if st.button("🔄 Force Data Sync", use_container_width=True):
+            fetch_manpower_data.clear()
+            st.toast("Cache cleared. Database synced.", icon="✅")
+            st.rerun()
             
-            # Formulating pristine responsive data tables inside map nodes
-            popup_html = f"""
-            <div style='font-family: "Inter", sans-serif; color: #0F172A; min-width:250px;'>
-                <h4 style='margin:0 0 4px 0; color:#1E3A8A; font-weight:700;'>Station Hub: {station}</h4>
-                <p style='margin:0 0 10px 0; font-size:12px; color:#64748B;'>Active Registry: <b>{station_total} Crew</b></p>
-                <table style='width:100%; font-size:11px; border-collapse: collapse;'>
-                    <tr style='background-color:#F1F5F9; text-align:left; border-bottom: 2px solid #E2E8F0;'>
-                        <th style='padding:6px 4px; font-weight:600;'>Name</th>
-                        <th style='padding:6px 4px; font-weight:600;'>Qualification</th>
-                    </tr>
+        st.divider()
+        
+        st.markdown("<div class='metric-title'>Current Session</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='color:#38BDF8; font-weight:700; margin-bottom:1rem;'>👤 {st.session_state.username}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='color:#94A3B8; font-size:0.85rem; margin-bottom:2rem;'>🛡️ {st.session_state.role}</div>", unsafe_allow_html=True)
+        
+        if st.button("Log Out Session", use_container_width=True, type="secondary"):
+            st.session_state.clear()
+            st.rerun()
+
+def render_spatial_map(df: pd.DataFrame) -> None:
+    """Generates the Folium interactive map with embedded analytical tooltips."""
+    m = folium.Map(location=[-2.5, 118.0], zoom_start=5, tiles="CartoDB dark_matter")
+    
+    for station, coords in STATION_COORDINATES.items():
+        station_data = df[df['Lokasi'].str.strip() == station]
+        if not station_data.empty:
+            total_px = len(station_data)
+            status_list = station_data['Status'].str.strip().tolist()
+            
+            # Logic for Node Colors
+            if station == "CGK":
+                node_color = "#3B82F6"  # Blue for HQ
+            elif "Active" in status_list:
+                node_color = "#10B981"  # Green for Active deployment
+            else:
+                node_color = "#F59E0B"  # Amber for Standby
+
+            # HTML Table strictly formatted for Folium Tooltips
+            html_table = f"""
+            <div style="font-family:'Plus Jakarta Sans',sans-serif; min-width:260px;">
+                <div style="background:#0F172A; color:#F8FAFC; padding:8px 12px; border-radius:6px 6px 0 0; border-bottom:2px solid {node_color};">
+                    <strong style="font-size:14px;">HUB {station}</strong><br>
+                    <span style="font-size:11px; color:#94A3B8;">Deployed Personnel: {total_px} Px</span>
+                </div>
+                <table style="width:100%; font-size:11px; background:#1E293B; color:#E2E8F0; border-collapse:collapse;">
             """
-            for _, row in sub_df.iterrows():
-                popup_html += f"""
-                <tr>
-                    <td style='padding:6px 4px; border-bottom:1px solid #E2E8F0; font-weight:500;'>{row['Nama']}</td>
-                    <td style='padding:6px 4px; border-bottom:1px solid #E2E8F0; color:#475569;'>{row['Kualifikasi']}</td>
+            for _, row in station_data.iterrows():
+                html_table += f"""
+                <tr style="border-bottom:1px solid #334155;">
+                    <td style="padding:6px 8px;">{row['Nama']}</td>
+                    <td style="padding:6px 8px; color:#94A3B8;">{row['Kualifikasi']}</td>
                 </tr>
                 """
-            popup_html += "</table></div>"
-            
-            folium.Marker(
+            html_table += "</table></div>"
+
+            folium.CircleMarker(
                 location=coords,
-                popup=folium.Popup(popup_html, max_width=350),
-                tooltip=f"Hub {station}: {station_total} Px Available",
-                icon=folium.Icon(color=marker_color, icon="info-sign")
+                radius=8,
+                color=node_color,
+                fill=True,
+                fill_color=node_color,
+                fill_opacity=0.8,
+                tooltip=folium.Tooltip(html_table),
             ).add_to(m)
             
-    st_folium(m, width="100%", height=520)
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown("<div class='section-header'>📋 Personnel Directory Ledger</div>", unsafe_allow_html=True)
-    st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
-    st.dataframe(df_filtered, use_container_width=True, hide_index=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    st_folium(m, width="100%", height=450, returned_objects=[])
 
-with col_right:
-    st.markdown("<div class='section-header'>📊 Advanced Manpower Analytics</div>", unsafe_allow_html=True)
+# ==============================================================================
+# MAIN APPLICATION CONTROLLER
+# ==============================================================================
+def main():
+    st.set_page_config(
+        page_title="GMF AeroAsia | Enterprise Command",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
     
-    pop_col1, pop_col2 = st.columns(2)
+    inject_enterprise_css()
     
-    with pop_col1:
-        # Popover 1: Micro UI Container Engine
-        with st.popover("⚙️ View Deployment Telemetry", use_container_width=True):
-            st.markdown("<h4 style='color:#0F172A; font-size:14px; font-weight:700; margin:0 0 4px 0;'>📊 Duty Distribution Status</h4>", unsafe_allow_html=True)
-            st.caption("Active operational breakdown of real-time statuses.")
-            if not df_filtered.empty:
-                st.bar_chart(df_filtered['Status'].value_counts(), color="#16A34A", height=200)
+    # Init Session State
+    if "logged_in" not in st.session_state:
+        st.session_state.logged_in = False
+        
+    if not st.session_state.logged_in:
+        render_authentication_gateway()
+        
+    # --- AUTHENTICATED ENVIRONMENT ---
+    render_sidebar()
+    
+    # Header
+    st.markdown("""
+        <div class="exec-banner">
+            <h1>OUTSTATION COMMAND CENTER</h1>
+            <p>Tactical Resource Allocation & Telemetry</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # Data Layer
+    df_raw = fetch_manpower_data()
+    
+    # Filtering Engine
+    search_query = st.text_input("🔍 Global Search (Filter by Name, Qualification, or Station)", placeholder="Enter keyword...")
+    if search_query:
+        df_display = df_raw[
+            df_raw.apply(lambda row: row.astype(str).str.contains(search_query, case=False).any(), axis=1)
+        ]
+    else:
+        df_display = df_raw
+
+    # Telemetry KPIs
+    total_px = len(df_display)
+    active_px = len(df_display[df_display['Status'].str.strip() == 'Active'])
+    standby_px = len(df_display[df_display['Status'].str.strip() == 'Standby'])
+    hq_px = len(df_display[df_display['Lokasi'].str.strip() == 'CGK'])
+
+    col1, col2, col3, col4 = st.columns(4)
+    with col1: st.markdown(f"<div class='metric-card' style='border-top: 3px solid #64748B;'><div class='metric-title'>Total Capacity</div><div class='metric-value'>{total_px}</div></div>", unsafe_allow_html=True)
+    with col2: st.markdown(f"<div class='metric-card' style='border-top: 3px solid #10B981;'><div class='metric-title'>Active Duty</div><div class='metric-value'>{active_px}</div></div>", unsafe_allow_html=True)
+    with col3: st.markdown(f"<div class='metric-card' style='border-top: 3px solid #F59E0B;'><div class='metric-title'>Standby Alert</div><div class='metric-value'>{standby_px}</div></div>", unsafe_allow_html=True)
+    with col4: st.markdown(f"<div class='metric-card' style='border-top: 3px solid #3B82F6;'><div class='metric-title'>HQ (CGK) Reserves</div><div class='metric-value'>{hq_px}</div></div>", unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Core Dashboard Layout
+    main_col, side_col = st.columns([7, 3])
+    
+    with main_col:
+        st.markdown("<div class='section-header'>📍 Tactical Geospatial Overview</div>", unsafe_allow_html=True)
+        st.markdown("<div class='panel-container'>", unsafe_allow_html=True)
+        render_spatial_map(df_display)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        st.markdown("<div class='section-header'>📋 Personnel Roster Ledger</div>", unsafe_allow_html=True)
+        st.dataframe(df_display, use_container_width=True, hide_index=True)
+
+    with side_col:
+        st.markdown("<div class='section-header'>📊 Force Analytics</div>", unsafe_allow_html=True)
+        st.markdown("<div class='panel-container'>", unsafe_allow_html=True)
+        
+        with st.popover("📈 View Status Distribution", use_container_width=True):
+            st.caption("Real-time operational status ratios.")
+            if not df_display.empty:
+                st.bar_chart(df_display['Status'].value_counts(), color="#10B981")
                 
-    with pop_col2:
-        # Popover 2: Micro UI Container Engine
-        with st.popover("✈️ Inspect Type Ratings", use_container_width=True):
-            st.markdown("<h4 style='color:#0F172A; font-size:14px; font-weight:700; margin:0 0 4px 0;'>🚀 Fleet Skillset Capability</h4>", unsafe_allow_html=True)
-            st.caption("Top 5 certified active competencies monitored.")
-            if not df_filtered.empty:
-                st.bar_chart(df_filtered['Kualifikasi'].value_counts().head(5), color="#D97706", height=200)
+        with st.popover("⚙️ View Competency Matrix", use_container_width=True):
+            st.caption("Top 5 certified qualifications in the field.")
+            if not df_display.empty:
+                st.bar_chart(df_display['Kualifikasi'].value_counts().head(5), color="#F59E0B")
                 
-    st.markdown("<div class='section-header'>📈 Station Concentration Metrics</div>", unsafe_allow_html=True)
-    st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
-    if not df_filtered.empty:
-        st.bar_chart(df_filtered['Lokasi'].value_counts(), color="#1E3A8A", height=280)
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        st.markdown("<div class='section-header'>🏢 Hub Concentration</div>", unsafe_allow_html=True)
+        st.markdown("<div class='panel-container'>", unsafe_allow_html=True)
+        if not df_display.empty:
+            st.bar_chart(df_display['Lokasi'].value_counts(), color="#3B82F6", height=250)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+if __name__ == "__main__":
+    main()
