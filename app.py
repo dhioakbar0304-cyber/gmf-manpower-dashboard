@@ -15,6 +15,20 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# 🔑 INITIALIZE SESSION STATE UNTUK LOGIN
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "username" not in st.session_state:
+    st.session_state.username = ""
+if "role" not in st.session_state:
+    st.session_state.role = ""
+
+# 🎯 DATABASE USER (Sederhana untuk autentikasi awal)
+USER_DATABASE = {
+    "dhioakbar0304": {"password": "gmfsecure01", "role": "PPC Planning & Control"},
+    "supervisor_gmf": {"password": "gmfsecure02", "role": "Maintenance Supervisor"}
+}
+
 # 🎨 CSS KUSTOM: EXCLUSIVE CORPORATE TONE, AVIATION BACKDROP, & GLASSMORPHISM
 st.markdown("""
     <style>
@@ -40,7 +54,7 @@ st.markdown("""
             border-right: 2px solid #005C97;
         }
         
-        /* SIDEBAR TEXT (Hanya menyasar konten user agar tidak merusak tombol collapse bawaan Streamlit) */
+        /* SIDEBAR TEXT */
         div[data-testid="stSidebarUserContent"] p,
         div[data-testid="stSidebarUserContent"] span,
         div[data-testid="stSidebarUserContent"] h3,
@@ -201,8 +215,68 @@ st.markdown("""
             padding: 15px;
             box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05);
         }
+
+        /* Kotak Login Khusus */
+        .login-container {
+            max-width: 450px;
+            margin: 80px auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 14px;
+            box-shadow: 0 15px 35px rgba(3, 18, 38, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-top: 6px solid #005C97;
+        }
     </style>
 """, unsafe_allow_html=True)
+
+
+# =====================================================================
+# 🔑 LOGIN PAGE CONTROLLER
+# =====================================================================
+if not st.session_state.logged_in:
+    # Header minimalis khusus halaman login
+    st.markdown("""
+        <div style="text-align: center; margin-top: 50px; margin-bottom: -40px;">
+            <h2 style="color: #041226; font-weight: 900; letter-spacing: 1px; font-size: 28px;">
+                TACTICAL COMMAND PORTAL
+            </h2>
+            <p style="color: #005C97; font-weight: bold; font-size: 12px; letter-spacing: 3px; text-transform: uppercase;">
+                GMF AeroAsia - Outstation Division
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Kotak formulir login
+    with st.container():
+        st.markdown('<div class="login-container">', unsafe_allow_html=True)
+        st.subheader("🔒 Secure Gateway Login")
+        
+        input_user = st.text_input("Username", placeholder="Masukkan ID personel Anda...", key="login_user")
+        input_pass = st.text_input("Password", type="password", placeholder="••••••••", key="login_pass")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        btn_login = st.button("AUTHENTICATE SYSTEM 🔓", use_container_width=True)
+        
+        if btn_login:
+            # Validasi input dengan user database
+            username_clean = input_user.strip()
+            if username_clean in USER_DATABASE and USER_DATABASE[username_clean]["password"] == input_pass:
+                st.session_state.logged_in = True
+                st.session_state.username = username_clean
+                st.session_state.role = USER_DATABASE[username_clean]["role"]
+                st.toast("Akses berhasil! Menyiapkan dashboard...", icon="✅")
+                st.rerun()
+            else:
+                st.error("🚨 Username atau password salah. Pastikan kredensial Anda valid.")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+        st.stop()  # Menghentikan jalannya kode di bawah agar dashboard tidak terbuka sebelum login
+
+
+# =====================================================================
+# 💻 MAIN DASHBOARD APP (Dijalankan hanya jika st.session_state.logged_in == True)
+# =====================================================================
 
 # Master Koordinat Bandara Hub
 DOKUMEN_KOORDINAT = {
@@ -252,16 +326,27 @@ if st.sidebar.button("🔄 RE-SYNC LIVE DATA", use_container_width=True):
     st.rerun()
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("### 👤 MONITOR PROFILE")
 
-st.sidebar.markdown("""
+# 👤 MONITOR PROFILE (Menghubungkan dengan Session State Login)
+st.sidebar.markdown("### 👤 MONITOR PROFILE")
+st.sidebar.markdown(f"""
 <div style="line-height: 2.0; font-size: 13px;">
-    <p style="margin: 0;">👤 <b>User Authorized:</b><br><span style="color: #00C9FF !important; font-weight: bold; font-size:14px;">dhioakbar0304</span></p><br>
-    <p style="margin: 0;">💼 <b>Role Account:</b><br><span style="color: #00C9FF !important; font-weight: bold; font-size:14px;">PPC Planning & Control</span></p><br>
+    <p style="margin: 0;">👤 <b>User Authorized:</b><br><span style="color: #00C9FF !important; font-weight: bold; font-size:14px;">{st.session_state.username}</span></p><br>
+    <p style="margin: 0;">💼 <b>Role Account:</b><br><span style="color: #00C9FF !important; font-weight: bold; font-size:14px;">{st.session_state.role}</span></p><br>
     <p style="margin: 0;">🌐 <b>Environment:</b><br><span style="color: #00C9FF !important; font-weight: bold; font-size:14px;">Production Gateway</span></p><br>
     <p style="margin: 0;">📡 <b>Data Source:</b><br><span style="color: #10B981 !important; font-weight: bold; font-size:14px;">Connected (Google Sheets Live)</span></p>
 </div>
 """, unsafe_allow_html=True)
+
+st.sidebar.markdown("<br>", unsafe_allow_html=True)
+
+# Tombol Logout Aman
+if st.sidebar.button("🔴 SECURE LOGOUT", use_container_width=True):
+    st.session_state.logged_in = False
+    st.session_state.username = ""
+    st.session_state.role = ""
+    st.toast("Berhasil keluar dengan aman.", icon="ℹ️")
+    st.rerun()
 
 st.sidebar.markdown("---")
 
@@ -273,11 +358,11 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# 🔍 4. SEARCH ENGINE MODERN (Sudah Diperbaiki Bebas Bug!)
+# 🔍 4. SEARCH ENGINE MODERN
 st.markdown("<div class='section-header'>🔎 Tactical Resource Search Engine</div>", unsafe_allow_html=True)
 search_query = st.text_input("Ketik di bawah ini untuk mencari personel atau kualifikasi:", "", placeholder="Cari nama, keahlian khusus, atau lokasi stasiun (contoh: Ahmad, B737, Avionics, CGK)...")
 
-# Memperbaiki bug NameError dengan merujuk langsung ke 'df_mentah'
+# Memfilter data berdasarkan kueri pencarian dari df_mentah
 if search_query:
     df_pekerja = df_mentah[
         df_mentah['Nama'].str.contains(search_query, case=False, na=False) |
