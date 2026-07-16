@@ -273,16 +273,16 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# 🔍 4. SEARCH ENGINE MODERN
+# 🔍 4. SEARCH ENGINE MODERN (Sudah Diperbaiki Bebas Bug!)
 st.markdown("<div class='section-header'>🔎 Tactical Resource Search Engine</div>", unsafe_allow_html=True)
 search_query = st.text_input("Ketik di bawah ini untuk mencari personel atau kualifikasi:", "", placeholder="Cari nama, keahlian khusus, atau lokasi stasiun (contoh: Ahmad, B737, Avionics, CGK)...")
 
-# Filter data berdasarkan kueri pencarian
+# Memperbaiki bug NameError dengan merujuk langsung ke 'df_mentah'
 if search_query:
     df_pekerja = df_mentah[
         df_mentah['Nama'].str.contains(search_query, case=False, na=False) |
-        df_pekerja['Kualifikasi'].str.contains(search_query, case=False, na=False) |
-        df_pekerja['Lokasi'].str.contains(search_query, case=False, na=False)
+        df_mentah['Kualifikasi'].str.contains(search_query, case=False, na=False) |
+        df_mentah['Lokasi'].str.contains(search_query, case=False, na=False)
     ]
 else:
     df_pekerja = df_mentah
