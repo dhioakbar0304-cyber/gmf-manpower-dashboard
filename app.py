@@ -15,29 +15,29 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 🎨 CSS KUSTOM: AVIATION BACKDROP & GLASSMORPHISM DESIGN
+# 🎨 CSS KUSTOM: EXCLUSIVE AVIATION BACKDROP, GLASSMORPHISM & GARUDA THEME
 st.markdown("""
     <style>
         /* Import Font Inter */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;600;700;800&display=swap');
         
         html, body, [class*="css"] {
             font-family: 'Inter', sans-serif;
         }
 
-        /* BACKGROUND GAMBAR PENUH (TEMA AVIASI/HANGAR) */
+        /* BACKGROUND GAMBAR PENUH (TEMA AVIASI/HANGAR DENGAN OVERLAY PREMIUM) */
         .stApp {
-            background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), 
+            background-image: linear-gradient(rgba(240, 244, 248, 0.88), rgba(240, 244, 248, 0.88)), 
                               url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
         }
         
-        /* Sidebar Gelap Premium dengan Teks Putih Kontras Tinggi */
+        /* Sidebar Gelap Pekat Premium dengan Teks Putih Kontras Tinggi */
         section[data-testid="stSidebar"] {
-            background-color: #0B1329 !important; /* Biru Gelap Pekat */
-            border-right: 2px solid #1E293B;
+            background-color: #051C3F !important; /* Biru Gelap Garuda Indonesia */
+            border-right: 3px solid #005C97;
         }
         
         /* Memaksa semua elemen di sidebar terlihat putih terang */
@@ -49,7 +49,7 @@ st.markdown("""
             font-weight: 500;
         }
         
-        /* Membuang block abu-abu pada teks kode di sidebar */
+        /* Membuang block abu-abu pada teks di sidebar */
         section[data-testid="stSidebar"] code {
             background-color: transparent !important;
             color: #38BDF8 !important;
@@ -60,28 +60,51 @@ st.markdown("""
         
         /* Tombol Sync Biru Terang di Sidebar */
         div.stButton > button {
-            background-color: #0066CC !important;
+            background-color: #005C97 !important;
             color: #FFFFFF !important;
             border-radius: 8px !important;
-            border: 1px solid #38BDF8 !important;
+            border: 1px solid #00C9FF !important;
             font-weight: 700 !important;
             padding: 10px !important;
+            transition: all 0.3s ease;
         }
         div.stButton > button:hover {
-            background-color: #0052A3 !important;
-            box-shadow: 0px 4px 15px rgba(56, 189, 248, 0.4);
+            background-color: #003F6B !important;
+            box-shadow: 0px 4px 15px rgba(0, 201, 255, 0.4);
+        }
+        
+        /* Tombol Link Google Sheets Hijau Premium */
+        .sheets-btn {
+            display: block;
+            text-align: center;
+            background-color: #107C41 !important; /* Hijau Microsoft Excel / Sheets */
+            color: #FFFFFF !important;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #10B981;
+            transition: all 0.3s ease;
+        }
+        .sheets-btn:hover {
+            background-color: #0A5C30 !important;
+            box-shadow: 0px 4px 15px rgba(16, 185, 129, 0.4);
+            color: #FFFFFF !important;
+            text-decoration: none;
         }
         
         /* Banner GMF Premium Terang Kontras */
         .gmf-banner {
-            background: linear-gradient(135deg, #0A2540 0%, #001020 100%);
+            background: linear-gradient(135deg, #051C3F 0%, #003F6B 100%);
             padding: 40px 20px;
             border-radius: 16px;
             color: #FFFFFF !important;
             text-align: center;
             margin-bottom: 30px;
-            border-bottom: 5px solid #0066CC;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            border-bottom: 5px solid #00C9FF;
+            box-shadow: 0 10px 25px rgba(5, 28, 63, 0.2);
         }
         
         .gmf-banner h1 {
@@ -93,7 +116,7 @@ st.markdown("""
         }
         
         .gmf-banner p {
-            color: #38BDF8 !important;
+            color: #00C9FF !important;
             font-size: 14px !important;
             font-weight: 700;
             letter-spacing: 3px;
@@ -105,26 +128,31 @@ st.markdown("""
         /* Kolom Pencarian (Tebal & Glassmorphism) */
         div[data-testid="stTextInput"] input {
             border-radius: 8px !important;
-            border: 2px solid #0A2540 !important;
+            border: 2px solid #051C3F !important;
             padding: 12px !important;
             font-size: 15px !important;
-            color: #0F172A !important;
+            color: #051C3F !important;
             background-color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 600 !important;
         }
 
         /* Kartu KPI dengan Efek Glassmorphism Modern */
         .kpi-card {
-            background-color: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            background-color: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
-            border-top: 5px solid #0066CC;
+            box-shadow: 0 8px 32px 0 rgba(5, 28, 63, 0.08);
+            border-top: 5px solid #005C97;
+            transition: transform 0.2s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-2px);
         }
         
         .kpi-title {
-            color: #475569;
+            color: #334155;
             font-size: 13px;
             font-weight: 700;
             margin-bottom: 8px;
@@ -135,7 +163,7 @@ st.markdown("""
         .kpi-number {
             font-size: 34px;
             font-weight: 800;
-            color: #0F172A;
+            color: #051C3F;
             margin: 0;
         }
 
@@ -143,21 +171,21 @@ st.markdown("""
         .section-header {
             font-size: 20px;
             font-weight: 800;
-            color: #0A2540;
+            color: #051C3F;
             margin-top: 30px;
             margin-bottom: 15px;
-            border-left: 5px solid #0066CC;
+            border-left: 5px solid #005C97;
             padding-left: 10px;
         }
         
         /* Container Float Glassmorphism untuk Peta & Tabel */
         .floating-panel {
-            background-color: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            background-color: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             border-radius: 12px;
             padding: 15px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.06);
+            box-shadow: 0 8px 32px 0 rgba(5, 28, 63, 0.06);
         }
     </style>
 """, unsafe_allow_html=True)
@@ -170,12 +198,13 @@ DOKUMEN_KOORDINAT = {
     "BTH": [1.1211, 104.1182], "BPN": [-1.2683, 116.8944]
 }
 
-# Link Google Sheets live
-LINK_GOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1IPuSFsMxZCKQBcL7NBoE-JIsQkG7-DePII0I2b8x9Vk/export?format=csv&gid=827445294"
+# Tautan Spreadsheet Google Sheets Asli
+LINK_EDIT_GOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1IPuSFsMxZCKQBcL7NBoE-JIsQkG7-DePII0I2b8x9Vk/edit"
+LINK_EXPORT_GOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1IPuSFsMxZCKQBcL7NBoE-JIsQkG7-DePII0I2b8x9Vk/export?format=csv&gid=827445294"
 
 def load_live_google_sheets():
     try:
-        return pd.read_csv(LINK_GOOGLE_SHEETS)
+        return pd.read_csv(LINK_EXPORT_GOOGLE_SHEETS)
     except Exception as e:
         st.error(f"Gagal sinkronisasi ke Google Sheets: {e}")
         return pd.DataFrame([{"ID": 551001, "Nama": "Ahmad", "Kualifikasi": "B737 Expert", "Lokasi": "DPS", "Status": "Active", "PPC Pengirim": "Offline Backup"}])
@@ -185,21 +214,37 @@ df_mentah = load_live_google_sheets()
 # 2. PANEL SIDEBAR KIRI
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 
-# LOGO PT GMF AEROASIA (SVG CODE - DIJAMIN 100% MUNCUL)
-gmf_logo_svg = """
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 120" width="100%">
-  <!-- GMF Text -->
-  <text x="10" y="70" font-family="'Inter', sans-serif" font-weight="900" font-size="70" fill="#FFFFFF">GMF</text>
-  <!-- AeroAsia Text -->
-  <text x="185" y="70" font-family="'Inter', sans-serif" font-weight="400" font-size="45" fill="#38BDF8">AeroAsia</text>
-  <!-- Decorative underline -->
-  <rect x="10" y="85" width="390" height="6" fill="#0066CC" rx="3"/>
-</svg>
+# 🏆 LOGO ASLI GMF GARUDA INDONESIA GROUP (Format SVG Kode - 100% Pasti Muncul dan Super Tajam)
+logo_gmf_asli = """
+<div style="text-align: center; padding: 10px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" width="100%">
+        <!-- Lambang Burung Garuda (Biru Muda Menyala & Putih) -->
+        <path d="M400,140 C410,130 420,132 425,135 C430,140 428,145 428,150 C415,160 390,165 375,155 C365,148 360,135 365,125 C370,115 385,110 395,115 Z" fill="#00C9FF"/>
+        <path d="M10,80 C150,80 250,110 350,150 L340,165 C240,125 140,95 10,95 Z" fill="#FFFFFF"/>
+        <path d="M30,115 C160,115 260,145 345,185 L335,200 C250,160 150,130 30,130 Z" fill="#FFFFFF"/>
+        <path d="M50,150 C170,150 270,180 340,220 L330,235 C260,195 160,165 50,165 Z" fill="#FFFFFF"/>
+        <path d="M70,185 C180,185 270,215 325,255 L315,270 C260,230 170,200 70,200 Z" fill="#FFFFFF"/>
+        <!-- Teks GMF (Italic bold) -->
+        <text x="460" y="175" font-family="'Inter', 'Arial', sans-serif" font-weight="900" font-style="italic" font-size="130" fill="#FFFFFF">GMF</text>
+        <!-- Teks AeroAsia -->
+        <text x="760" y="175" font-family="'Inter', 'Arial', sans-serif" font-weight="400" font-size="100" fill="#FFFFFF">AeroAsia</text>
+        <!-- Teks Garuda Indonesia Group -->
+        <text x="465" y="245" font-family="'Inter', 'Arial', sans-serif" font-weight="600" font-size="32" letter-spacing="12" fill="#00C9FF">GARUDA INDONESIA GROUP</text>
+    </svg>
+</div>
 """
-st.sidebar.markdown(gmf_logo_svg, unsafe_allow_html=True)
+st.sidebar.markdown(logo_gmf_asli, unsafe_allow_html=True)
 
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
+
+# 📥 LINK EDIT EXCEL UNTUK PIC LAPANGAN
+st.sidebar.markdown("### 📊 INPUT & UPDATE DATA")
+st.sidebar.markdown(f"""
+    <a href="{LINK_EDIT_GOOGLE_SHEETS}" target="_blank" class="sheets-btn">
+        🟢 EDIT LIVE EXCEL SHEET
+    </a>
+""", unsafe_allow_html=True)
 
 st.sidebar.markdown("### 🎛️ CONTROL PANEL")
 if st.sidebar.button("🔄 RE-SYNC LIVE DATA", use_container_width=True):
@@ -212,9 +257,9 @@ st.sidebar.markdown("### 👤 MONITOR PROFILE")
 
 st.sidebar.markdown("""
 <div style="line-height: 1.8; font-size: 13px;">
-    <p style="margin: 0;">👤 <b>User Authorized:</b><br><span style="color: #38BDF8 !important; font-weight: bold;">dhioakbar0304</span></p><br>
-    <p style="margin: 0;">💼 <b>Role Account:</b><br><span style="color: #38BDF8 !important; font-weight: bold;">PPC Planning & Control</span></p><br>
-    <p style="margin: 0;">🌐 <b>Environment:</b><br><span style="color: #38BDF8 !important; font-weight: bold;">Production Gateway</span></p><br>
+    <p style="margin: 0;">👤 <b>User Authorized:</b><br><span style="color: #00C9FF !important; font-weight: bold;">dhioakbar0304</span></p><br>
+    <p style="margin: 0;">💼 <b>Role Account:</b><br><span style="color: #00C9FF !important; font-weight: bold;">PPC Planning & Control</span></p><br>
+    <p style="margin: 0;">🌐 <b>Environment:</b><br><span style="color: #00C9FF !important; font-weight: bold;">Production Gateway</span></p><br>
     <p style="margin: 0;">📡 <b>Data Source:</b><br><span style="color: #10B981 !important; font-weight: bold;">Connected (Google Sheets Live)</span></p>
 </div>
 """, unsafe_allow_html=True)
@@ -349,7 +394,7 @@ with col_right:
     st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
     if not df_pekerja.empty:
         distribusi_lokasi = df_pekerja['Lokasi'].value_counts()
-        st.bar_chart(distribusi_lokasi, color="#1E3A8A")
+        st.bar_chart(distribusi_lokasi, color="#051C3F")
     else:
         st.caption("Tidak ada data untuk dibuat grafik.")
     st.markdown('</div>', unsafe_allow_html=True)
