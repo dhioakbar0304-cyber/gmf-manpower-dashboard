@@ -146,7 +146,7 @@ st.markdown("""
             text-transform: uppercase;
         }
 
-        /* Kolom Pencarian */
+        /* Kolom Pencarian & Input Form */
         div[data-testid="stTextInput"] input {
             font-family: 'Montserrat', sans-serif !important;
             border-radius: 8px !important;
@@ -216,41 +216,45 @@ st.markdown("""
             box-shadow: 0 8px 24px 0 rgba(3, 18, 38, 0.05);
         }
 
-        /* Kotak Login Khusus */
-        .login-container {
-            max-width: 450px;
-            margin: 80px auto;
+        /* Kotak Login Terpadu */
+        .login-box {
             background-color: rgba(255, 255, 255, 0.95);
-            padding: 40px;
-            border-radius: 14px;
-            box-shadow: 0 15px 35px rgba(3, 18, 38, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.8);
+            padding: 35px;
+            border-radius: 12px;
             border-top: 6px solid #005C97;
+            box-shadow: 0 15px 35px rgba(4, 18, 38, 0.15);
+            border-left: 1px solid rgba(255, 255, 255, 0.7);
+            border-right: 1px solid rgba(255, 255, 255, 0.7);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.7);
         }
     </style>
 """, unsafe_allow_html=True)
 
 
 # =====================================================================
-# 🔑 LOGIN PAGE CONTROLLER
+# 🔑 LOGIN PAGE CONTROLLER (Clean Layout)
 # =====================================================================
 if not st.session_state.logged_in:
-    # Header minimalis khusus halaman login
-    st.markdown("""
-        <div style="text-align: center; margin-top: 50px; margin-bottom: -40px;">
-            <h2 style="color: #041226; font-weight: 900; letter-spacing: 1px; font-size: 28px;">
-                TACTICAL COMMAND PORTAL
-            </h2>
-            <p style="color: #005C97; font-weight: bold; font-size: 12px; letter-spacing: 3px; text-transform: uppercase;">
-                GMF AeroAsia - Outstation Division
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # Kotak formulir login
-    with st.container():
-        st.markdown('<div class="login-container">', unsafe_allow_html=True)
-        st.subheader("🔒 Secure Gateway Login")
+    # Menggunakan kolom pembantu agar kotak login pas berada di tengah layar
+    col_space_l, col_login_core, col_space_r = st.columns([1, 1.2, 1])
+    
+    with col_login_core:
+        st.markdown("<br><br><br>", unsafe_allow_html=True)
+        # Banner Judul Portal Login
+        st.markdown("""
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h2 style="color: #041226; font-weight: 900; letter-spacing: 1px; font-size: 26px; margin:0;">
+                    TACTICAL COMMAND PORTAL
+                </h2>
+                <p style="color: #005C97; font-weight: bold; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-top:5px;">
+                    GMF AeroAsia - Outstation Division
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # Container Login terpadu (Tanpa st.container() ganda)
+        st.markdown('<div class="login-box">', unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#041226; font-weight:800; margin-top:0;'>🔒 Secure Gateway Login</h3>", unsafe_allow_html=True)
         
         input_user = st.text_input("Username", placeholder="Masukkan ID personel Anda...", key="login_user")
         input_pass = st.text_input("Password", type="password", placeholder="••••••••", key="login_pass")
@@ -259,7 +263,6 @@ if not st.session_state.logged_in:
         btn_login = st.button("AUTHENTICATE SYSTEM 🔓", use_container_width=True)
         
         if btn_login:
-            # Validasi input dengan user database
             username_clean = input_user.strip()
             if username_clean in USER_DATABASE and USER_DATABASE[username_clean]["password"] == input_pass:
                 st.session_state.logged_in = True
@@ -269,13 +272,14 @@ if not st.session_state.logged_in:
                 st.rerun()
             else:
                 st.error("🚨 Username atau password salah. Pastikan kredensial Anda valid.")
-        
+                
         st.markdown('</div>', unsafe_allow_html=True)
-        st.stop()  # Menghentikan jalannya kode di bawah agar dashboard tidak terbuka sebelum login
+        
+    st.stop()  # Blokir halaman utama jika belum sukses login
 
 
 # =====================================================================
-# 💻 MAIN DASHBOARD APP (Dijalankan hanya jika st.session_state.logged_in == True)
+# 💻 MAIN DASHBOARD APP (Aktif jika sudah Login)
 # =====================================================================
 
 # Master Koordinat Bandara Hub
@@ -302,7 +306,7 @@ df_mentah = load_live_google_sheets()
 # 2. PANEL SIDEBAR KIRI
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 
-# 🏆 LOGO GMF LOKAL (Sesuai nama file Anda)
+# 🏆 LOGO GMF LOKAL
 try:
     st.sidebar.image("gmf aeroasia logo new blue.png", use_container_width=True)
 except Exception as e:
@@ -327,7 +331,7 @@ if st.sidebar.button("🔄 RE-SYNC LIVE DATA", use_container_width=True):
 
 st.sidebar.markdown("---")
 
-# 👤 MONITOR PROFILE (Menghubungkan dengan Session State Login)
+# 👤 MONITOR PROFILE
 st.sidebar.markdown("### 👤 MONITOR PROFILE")
 st.sidebar.markdown(f"""
 <div style="line-height: 2.0; font-size: 13px;">
@@ -362,7 +366,7 @@ st.markdown("""
 st.markdown("<div class='section-header'>🔎 Tactical Resource Search Engine</div>", unsafe_allow_html=True)
 search_query = st.text_input("Ketik di bawah ini untuk mencari personel atau kualifikasi:", "", placeholder="Cari nama, keahlian khusus, atau lokasi stasiun (contoh: Ahmad, B737, Avionics, CGK)...")
 
-# Memfilter data berdasarkan kueri pencarian dari df_mentah
+# Memfilter data berdasarkan kueri pencarian
 if search_query:
     df_pekerja = df_mentah[
         df_mentah['Nama'].str.contains(search_query, case=False, na=False) |
