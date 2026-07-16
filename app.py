@@ -18,10 +18,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 🏢 CONFIG LOGO UTAMA GMF AEROASIA
-# Silakan letakkan file logo.png Anda di folder yang sama dengan script ini.
-# Atau Anda juga bisa langsung memasukkan URL gambar web resmi logo GMF di sini.
-LOGO_SOURCE = "logo.png" 
+# 🏢 CONFIG LOGO UTAMA GMF AEROASIA (SUDAH DISESUAIKAN DENGAN NAMA FILE BOS)
+LOGO_SOURCE = "gmf aeroasia logo new blue.png" 
 
 # INITIALIZE SESSION STATE
 if "logged_in" not in st.session_state:
@@ -100,6 +98,8 @@ st.markdown("""
             margin-bottom: 30px; 
             border-bottom: 5px solid #00C9FF; 
             box-shadow: 0 10px 30px rgba(3, 18, 38, 0.25); 
+            display: flex;
+            align-items: center;
         }
         .gmf-banner-text h1 { font-size: 38px !important; font-weight: 900 !important; letter-spacing: 2px; margin: 0 !important; color: #FFFFFF !important; padding-top: 5px; }
         .gmf-banner-text p { color: #00C9FF !important; font-size: 13px !important; font-weight: 700; letter-spacing: 4px; margin-top: 5px !important; text-transform: uppercase; }
@@ -236,7 +236,7 @@ with ban_col2:
     """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# SEARCH CONTAINER (WARNA HIGH-CONTRAST)
+# SEARCH CONTAINER
 search_query = st.text_input("🔎 Pencarian Berdasarkan Nama / Kualifikasi / Stasiun Hub:", placeholder="Ketik nama personel atau kode stasiun di sini...")
 
 if search_query:
@@ -248,7 +248,7 @@ if search_query:
 else:
     df_pekerja = df_mentah
 
-# KPI BLOCKS (SATUAN SUDAH BERGANTI JADI PERSONEL)
+# KPI BLOCKS
 total_personel = len(df_pekerja)
 personel_aktif = len(df_pekerja[df_pekerja['Status'].astype(str).str.strip().str.lower() == 'active'])
 personel_standby = len(df_pekerja[df_pekerja['Status'].astype(str).str.strip().str.lower() == 'standby'])
