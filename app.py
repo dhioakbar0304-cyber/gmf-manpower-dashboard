@@ -223,12 +223,10 @@ st.markdown("""
 # 🔑 LOGIN PAGE CONTROLLER (Clean Layout - No Ghost Boxes)
 # =====================================================================
 if not st.session_state.logged_in:
-    # Menggunakan kolom pembantu agar kotak login pas berada di tengah layar
     col_space_l, col_login_core, col_space_r = st.columns([1, 1.2, 1])
     
     with col_login_core:
         st.markdown("<br><br><br>", unsafe_allow_html=True)
-        # Banner Judul Portal Login
         st.markdown("""
             <div style="text-align: center; margin-bottom: 30px;">
                 <h2 style="color: #041226; font-weight: 900; letter-spacing: 1px; font-size: 26px; margin:0;">
@@ -240,9 +238,7 @@ if not st.session_state.logged_in:
             </div>
         """, unsafe_allow_html=True)
         
-        # --- BLOK FORM LOGIN (Menggunakan Container Streamlit Bersih) ---
         with st.container():
-            # 🏆 Menambahkan Logo GMF (PNG) langsung di atas formulir login
             try:
                 st.image("gmf aeroasia logo new blue.png", use_container_width=True)
                 st.markdown("<br>", unsafe_allow_html=True)
@@ -267,14 +263,13 @@ if not st.session_state.logged_in:
                 else:
                     st.error("🚨 Username atau password salah. Pastikan kredensial Anda valid.")
                 
-    st.stop()  # Blokir halaman utama jika belum sukses login
+    st.stop()
 
 
 # =====================================================================
 # 💻 MAIN DASHBOARD APP (Aktif jika sudah Login)
 # =====================================================================
 
-# Master Koordinat Bandara Hub
 DOKUMEN_KOORDINAT = {
     "CGK": [-6.1256, 106.6559], "KNO": [3.6422, 98.8853],
     "DPS": [-8.7481, 115.1674], "SUB": [-7.3798, 112.7873],
@@ -282,7 +277,6 @@ DOKUMEN_KOORDINAT = {
     "BTH": [1.1211, 104.1182], "BPN": [-1.2683, 116.8944]
 }
 
-# Link Google Sheets Live
 LINK_EDIT_GOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1IPuSFsMxZCKQBcL7NBoE-JIsQkG7-DePII0I2b8x9Vk/edit"
 LINK_EXPORT_GOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1IPuSFsMxZCKQBcL7NBoE-JIsQkG7-DePII0I2b8x9Vk/export?format=csv&gid=827445294"
 
@@ -298,7 +292,6 @@ df_mentah = load_live_google_sheets()
 # 2. PANEL SIDEBAR KIRI
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 
-# 🏆 LOGO GMF LOKAL
 try:
     st.sidebar.image("gmf aeroasia logo new blue.png", use_container_width=True)
 except Exception as e:
@@ -307,7 +300,6 @@ except Exception as e:
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
 
-# 📥 LINK EDIT EXCEL UNTUK PIC LAPANGAN
 st.sidebar.markdown("### 📊 INPUT & UPDATE DATA")
 st.sidebar.markdown(f"""
     <a href="{LINK_EDIT_GOOGLE_SHEETS}" target="_blank" class="sheets-btn">
@@ -323,7 +315,6 @@ if st.sidebar.button("🔄 RE-SYNC LIVE DATA", use_container_width=True):
 
 st.sidebar.markdown("---")
 
-# 👤 MONITOR PROFILE
 st.sidebar.markdown("### 👤 MONITOR PROFILE")
 st.sidebar.markdown(f"""
 <div style="line-height: 2.0; font-size: 13px;">
@@ -336,7 +327,6 @@ st.sidebar.markdown(f"""
 
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 
-# Tombol Logout Aman
 if st.sidebar.button("🔴 SECURE LOGOUT", use_container_width=True):
     st.session_state.logged_in = False
     st.session_state.username = ""
@@ -358,7 +348,6 @@ st.markdown("""
 st.markdown("<div class='section-header'>🔎 Tactical Resource Search Engine</div>", unsafe_allow_html=True)
 search_query = st.text_input("Ketik di bawah ini untuk mencari personel atau kualifikasi:", "", placeholder="Cari nama, keahlian khusus, atau lokasi stasiun (contoh: Ahmad, B737, Avionics, CGK)...")
 
-# Memfilter data berdasarkan kueri pencarian
 if search_query:
     df_pekerja = df_mentah[
         df_mentah['Nama'].str.contains(search_query, case=False, na=False) |
@@ -414,7 +403,7 @@ with c4:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# 6. LAYOUT UTAMA: FLOATING PANEL (PETA & TABEL)
+# 6. LAYOUT UTAMA: FLOATING PANEL (PETA & ANALITIK TABEL/CHART)
 col_left, col_right = st.columns([4, 3])
 
 with col_left:
@@ -449,10 +438,10 @@ with col_left:
                 icon=folium.Icon(color=warna_pin, icon="info-sign")
             ).add_to(m)
             
-    st_folium(m, width="100%", height=480)
+    st_folium(m, width="100%", height=520)
     st.markdown('</div>', unsafe_allow_html=True)
-
-with col_right:
+    
+    # Pindahkan Directory Ledger ke bagian bawah peta agar ruang vertikal lebih seimbang
     st.markdown("<div class='section-header'>📋 Personnel Directory Ledger</div>", unsafe_allow_html=True)
     st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
     st.dataframe(
@@ -469,8 +458,10 @@ with col_right:
         }
     )
     st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown("<div class='section-header' style='margin-top:20px;'>📊 Hub Strength Chart</div>", unsafe_allow_html=True)
+
+with col_right:
+    # --- CHART 1: STATION DISTRIBUTION (Bar Chart) ---
+    st.markdown("<div class='section-header'>📊 Hub Resource Strength</div>", unsafe_allow_html=True)
     st.markdown('<div class="floating-panel">', unsafe_allow_html=True)
     if not df_pekerja.empty:
         distribusi_lokasi = df_pekerja['Lokasi'].value_counts()
@@ -478,3 +469,31 @@ with col_right:
     else:
         st.caption("Tidak ada data untuk dibuat grafik.")
     st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Baris baru untuk menampung Chart 2 dan Chart 3 berdampingan
+    st.markdown("<div class='section-header'>📈 Advanced Manpower Analytics</div>", unsafe_allow_html=True)
+    
+    sub_col1, sub_col2 = st.columns(2)
+    
+    with sub_col1:
+        # --- CHART 2: STATUS OPERATION (Pie/Donut Simulasi via Streamlit Native) ---
+        st.markdown('<div class="floating-panel" style="height: 260px;">', unsafe_allow_html=True)
+        st.markdown("<p style='font-size:12px; font-weight:700; color:#041226; margin:0 0 10px 0;'>⏱️ DUTY STATUS SHARE</p>", unsafe_allow_html=True)
+        if not df_pekerja.empty:
+            distribusi_status = df_pekerja['Status'].value_counts()
+            # Render visual bar kecil vertikal sebagai representasi perbandingan status
+            st.bar_chart(distribusi_status, color="#107C41", height=180)
+        else:
+            st.caption("No status data available.")
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+    with sub_col2:
+        # --- CHART 3: TOP AIRCRAFT QUALIFICATIONS (Horizontal Representation) ---
+        st.markdown('<div class="floating-panel" style="height: 260px;">', unsafe_allow_html=True)
+        st.markdown("<p style='font-size:12px; font-weight:700; color:#041226; margin:0 0 10px 0;'>✈️ AIRCRAFT TYPE CAPABILITY</p>", unsafe_allow_html=True)
+        if not df_pekerja.empty:
+            distribusi_kualifikasi = df_pekerja['Kualifikasi'].value_counts().head(5)
+            st.bar_chart(distribusi_kualifikasi, color="#F59E0B", height=180)
+        else:
+            st.caption("No capability data available.")
+        st.markdown('</div>', unsafe_allow_html=True)
