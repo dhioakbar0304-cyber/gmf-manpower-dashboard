@@ -115,7 +115,7 @@ st.markdown("""
         }
 
         #MainMenu, footer { visibility: hidden; }
-        .block-container { padding-top: 1.6rem !important; }
+        .block-container { padding-top: 2.6rem !important; }
 
         /* ---- Search field ---- */
         div[data-testid="stTextInput"] label {
@@ -427,6 +427,8 @@ if st.sidebar.button(f"⏻   Secure Logout", use_container_width=True):
 # ---- LIVE WORLD CLOCK BOARD (aviation ops-center style: Zulu/UTC + WIB/WITA/WIT + hub cities) ----
 # Built without f-string interpolation inside the CSS/JS block to avoid any brace-escaping issues;
 # data is passed in as a JSON blob via plain string concatenation instead.
+st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+
 WORLD_CLOCKS = [
     {"code": "ZULU", "city": "UTC / Zulu",      "tz": "UTC",             "big": True},
     {"code": "WIB",  "city": "Jakarta",         "tz": "Asia/Jakarta",    "big": False},
