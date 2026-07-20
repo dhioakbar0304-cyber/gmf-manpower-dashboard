@@ -6,6 +6,7 @@ from streamlit_folium import st_folium
 import ssl
 import os
 import time
+import json
 from datetime import datetime
 
 # Bypass verifikasi SSL Certificate
@@ -423,40 +424,119 @@ if st.sidebar.button(f"⏻   Secure Logout", use_container_width=True):
     st.session_state.logged_in = False
     st.rerun()
 
-# ---- LIVE HEADER STRIP (real-time WIB clock, self-contained JS component) ----
-components.html(f"""
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600&family=JetBrains+Mono:wght@500;600&display=swap');
-        html, body {{ margin:0; padding:0; background:transparent; }}
-        .strip {{
-            display:flex; align-items:center; justify-content:space-between;
-            background: linear-gradient(90deg, #070F1A 0%, #0D1B2A 100%);
-            border: 1px solid #0B4870; border-radius: 14px; padding: 12px 22px;
-            font-family:'Inter', sans-serif; box-shadow: 0 6px 20px rgba(7,15,26,0.18);
-        }}
-        .strip-left {{ display:flex; align-items:center; gap:10px; }}
-        .dot {{ width:8px; height:8px; border-radius:50%; background:#22C3E6; box-shadow:0 0 0 4px rgba(34,195,230,0.16); animation: pulse 2s ease-in-out infinite; }}
-        @keyframes pulse {{ 0%,100% {{ opacity:1; }} 50% {{ opacity:0.3; }} }}
-        .label {{ color:#DCEAF3; font-size:12px; font-weight:600; letter-spacing:0.4px; }}
-        .clock {{ color:#8FB4CE; font-family:'JetBrains Mono', monospace; font-size:12.5px; font-weight:500; letter-spacing:0.3px; }}
-    </style>
-    <div class="strip">
-        <div class="strip-left"><div class="dot"></div><span class="label">GMF AeroAsia — Live Feed Connected</span></div>
-        <div class="clock" id="liveClock">—</div>
-    </div>
-    <script>
-        function tick() {{
-            const now = new Date();
-            const fmt = new Intl.DateTimeFormat('id-ID', {{
-                timeZone: 'Asia/Jakarta', weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
-                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-            }});
-            document.getElementById('liveClock').textContent = fmt.format(now) + ' WIB';
-        }}
-        tick();
-        setInterval(tick, 1000);
-    </script>
-""", height=58)
+# ---- LIVE WORLD CLOCK BOARD (aviation ops-center style: Zulu/UTC + WIB/WITA/WIT + hub cities) ----
+# Built without f-string interpolation inside the CSS/JS block to avoid any brace-escaping issues;
+# data is passed in as a JSON blob via plain string concatenation instead.
+WORLD_CLOCKS = [
+    {"code": "ZULU", "city": "UTC / Zulu",      "tz": "UTC",             "big": True},
+    {"code": "WIB",  "city": "Jakarta",         "tz": "Asia/Jakarta",    "big": False},
+    {"code": "WITA", "city": "Makassar",        "tz": "Asia/Makassar",   "big": False},
+    {"code": "WIT",  "city": "Jayapura",        "tz": "Asia/Jayapura",   "big": False},
+    {"code": "SIN",  "city": "Singapore",       "tz": "Asia/Singapore",  "big": False},
+    {"code": "DXB",  "city": "Dubai",           "tz": "Asia/Dubai",      "big": False},
+    {"code": "LHR",  "city": "London",          "tz": "Europe/London",   "big": False},
+]
+
+_zulu = WORLD_CLOCKS[0]
+_hubs = WORLD_CLOCKS[1:]
+
+_zulu_card = (
+    '<div class="clock-zulu">'
+    '<div class="cz-label">' + _zulu["code"] + '</div>'
+    '<div class="cz-time" id="clock-' + _zulu["code"] + '">--:--:--</div>'
+    '<div class="cz-date" id="date-' + _zulu["code"] + '">--</div>'
+    '</div>'
+)
+
+_hub_cards = ""
+for z in _hubs:
+    _hub_cards += (
+        '<div class="clock-chip">'
+        '<div class="cc-code">' + z["code"] + '</div>'
+        '<div class="cc-time" id="clock-' + z["code"] + '">--:--:--</div>'
+        '<div class="cc-city">' + z["city"] + '</div>'
+        '</div>'
+    )
+
+_style_block = """
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap');
+    * { box-sizing: border-box; }
+    html, body { margin:0; padding:0; background:transparent; font-family:'Inter', sans-serif; overflow:visible; }
+    .board {
+        display:flex; align-items:stretch; gap:18px; flex-wrap:wrap;
+        background: linear-gradient(115deg, #070F1A 0%, #0D1B2A 55%, #0B4870 160%);
+        border: 1px solid #123A57; border-radius: 16px; padding: 16px 22px;
+        box-shadow: 0 8px 24px rgba(7,15,26,0.22);
+    }
+    .board-header {
+        display:flex; align-items:center; gap:9px; width:100%; margin-bottom:2px;
+    }
+    .dot { width:7px; height:7px; border-radius:50%; background:#22C3E6; box-shadow:0 0 0 4px rgba(34,195,230,0.16); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+    .board-label { color:#8FB4CE; font-size:10.5px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase; }
+    .board-row { display:flex; align-items:center; gap:18px; flex-wrap:wrap; width:100%; }
+    .clock-zulu {
+        display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
+        padding-right:18px; border-right:1px solid rgba(255,255,255,0.10); min-width:150px;
+    }
+    .cz-label { color:#22C3E6; font-size:10.5px; font-weight:700; letter-spacing:1.6px; margin-bottom:3px; }
+    .cz-time { color:#FFFFFF; font-family:'JetBrains Mono', monospace; font-size:24px; font-weight:700; letter-spacing:0.5px; line-height:1.1; }
+    .cz-date { color:#7E93A8; font-size:10.5px; margin-top:3px; }
+    .clock-chip {
+        display:flex; flex-direction:column; align-items:flex-start; justify-content:center; min-width:78px;
+    }
+    .cc-code { color:#DCEAF3; font-size:10px; font-weight:700; letter-spacing:1.2px; margin-bottom:2px; }
+    .cc-time { color:#FFFFFF; font-family:'JetBrains Mono', monospace; font-size:15px; font-weight:600; letter-spacing:0.3px; }
+    .cc-city { color:#5F7A92; font-size:9.5px; margin-top:2px; }
+    @media (max-width: 700px) {
+        .clock-zulu { border-right:none; padding-right:0; }
+        .board-row { gap:14px; }
+    }
+</style>
+"""
+
+_html_block = (
+    '<div class="board">'
+    '<div class="board-header"><div class="dot"></div><span class="board-label">GMF AeroAsia &middot; Live Ops Time Board</span></div>'
+    '<div class="board-row">' + _zulu_card + _hub_cards + '</div>'
+    '</div>'
+)
+
+_zones_json = json.dumps([{"code": z["code"], "tz": z["tz"]} for z in WORLD_CLOCKS])
+
+_script_block = """
+<script>
+(function() {
+    var zones = __ZONES_JSON__;
+    function tick() {
+        var now = new Date();
+        zones.forEach(function(z) {
+            try {
+                var timeFmt = new Intl.DateTimeFormat('en-GB', {
+                    timeZone: z.tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+                });
+                var elTime = document.getElementById('clock-' + z.code);
+                if (elTime) { elTime.textContent = timeFmt.format(now); }
+
+                var elDate = document.getElementById('date-' + z.code);
+                if (elDate) {
+                    var dateFmt = new Intl.DateTimeFormat('en-GB', {
+                        timeZone: z.tz, weekday: 'short', day: '2-digit', month: 'short', year: 'numeric'
+                    });
+                    elDate.textContent = dateFmt.format(now);
+                }
+            } catch (e) { /* ignore unsupported tz in old browsers */ }
+        });
+    }
+    tick();
+    setInterval(tick, 1000);
+})();
+</script>
+"""
+_script_block = _script_block.replace("__ZONES_JSON__", _zones_json)
+
+components.html(_style_block + _html_block + _script_block, height=130, scrolling=False)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
